@@ -1,0 +1,155 @@
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum ActionType {
+  AJOUT
+  MODIFICATION
+}
+
+enum RequestStatus {
+  EN_ATTENTE
+  ACCEPTEE
+  REFUSEE
+}
+
+model User {
+  id       String @id @default(cuid())
+  pseudo   String? @unique
+  email    String @unique
+  role     Role   @default(USER)
+  emailVerified Boolean?
+
+  comments Commentaire[]
+  requests Request[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  sessions  Session[]
+  accounts  Account[]
+
+  @@map("user")
+}
+
+model Generation {
+  id  Int    @id @default(autoincrement())
+  nom String @unique
+
+  pokemons Pokemon[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Type {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  image String?
+  color String?
+
+  pokemons Pokemon[]
+  requests Request[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Pokemon {
+  id      Int    @id @default(autoincrement())
+  name    String @unique
+  photo   String
+  content Json
+
+  generation   Generation @relation(fields: [generationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  generationId Int
+
+  types    Type[]
+  comments Commentaire[]
+  requests Request[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([generationId])
+}
+
+model Commentaire {
+  id        Int      @id @default(autoincrement())
+  texte     String
+  createdAt DateTime @default(now())
+
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  authorId String
+
+  pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  pokemonId Int
+
+  @@index([authorId])
+  @@index([pokemonId])
+}
+
+model Request {
+  id           Int           @id @default(autoincrement())
+  name         String
+  photo        String
+  types        Type[]
+  content      Json
+  actionType   ActionType
+  status       RequestStatus @default(EN_ATTENTE)
+  proposedDate DateTime      @default(now())
+
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  authorId String
+
+  pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  pokemonId Int
+
+  @@index([authorId])
+  @@index([pokemonId])
+  @@index([status])
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password               String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
