@@ -1,14 +1,18 @@
-"use client"; 
+"use client";
 
-import { useState, useEffect } from "react"; 
-import { Button, 
-          Navbar, 
-          Dropdown, 
-          DropdownItem, 
-          DropdownDivider, 
-          ToggleSwitch, 
-          Checkbox, } from "flowbite-react"; 
-import { CirclePlus, Pen } from "lucide-react"; 
+import { useEffect, useState } from "react";
+import {
+  Button,
+  Navbar,
+  Dropdown,
+  DropdownItem,
+  DropdownDivider,
+  ToggleSwitch,
+  Checkbox,
+} from "flowbite-react";
+import { CirclePlus, Pen } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useFilters } from "../providers/FiltersProvider";
 
 export default function MyNavbar() {
   const [showFilters, setShowFilters] = useState(false);
@@ -16,7 +20,10 @@ export default function MyNavbar() {
   const [generations, setGenerations] = useState([]);
   const [types, setTypes] = useState([]);
 
-  // Charger les données depuis l’API
+  const { filters, setFilters, search, setSearch } = useFilters(); // ✅ CONTEXTE
+  const pathname = usePathname();
+
+  // Charger données API
   useEffect(() => {
     async function loadData() {
       try {
@@ -38,27 +45,52 @@ export default function MyNavbar() {
     <>
       {/* NAVBAR */}
       <Navbar className="bg-white shadow-md px-4 justify-between">
-        {/* Gauche : Filtres + Créer */}
+        {/* Gauche : Filtres ou Retour */}
         <div className="flex items-center gap-6">
-          {/* Toggle Filtres */}
-          <div className="flex items-center gap-2 cursor-pointer">
-            <span className="text-sm font-medium">Filtres</span>
-            <ToggleSwitch
-              checked={showFilters}
-              onChange={() => setShowFilters(!showFilters)}
-              className="text-[#EC533A]"
-            />
-          </div>
+          {pathname === "/" ? (
+            // 🔹 Filtres visibles seulement sur l’accueil
+            <div className="flex items-center gap-2 cursor-pointer">
+              <span className="text-sm font-medium">Filtres</span>
+              <ToggleSwitch
+                checked={showFilters}
+                onChange={() => setShowFilters(!showFilters)}
+                className="text-[#EC533A]"
+              />
+            </div>
+          ) : (
+            // 🔹 Bouton retour sur les autres pages
+            <Button
+              className="bg-[#EC533A] hover:bg-orange-700 text-white rounded-md"
+              onClick={() => window.history.back()}
+            >
+              Retour
+            </Button>
+          )}
+
           {/* Bouton Créer */}
           <div className="flex flex-col items-center">
-            <Button className="bg-[#EC533A] hover:bg-red-600 rounded-full p-0.5">
+            <Button className="bg-[#EC533A] hover:bg-orange-700 rounded-full p-0.5">
               <CirclePlus className="h-9 w-9 text-white" />
             </Button>
             <span className="text-sm mt-1">Créer</span>
           </div>
         </div>
-        {/* Droite : Profil */}
-        <div className="flex items-center gap-4 h-8 bg-[#EC533A] p-4 text-white rounded-md border border-black">
+
+        {/* Droite : Barre de recherche (sauf sur accueil) */}
+        {pathname !== "/" && (
+          <div className="flex items-center bg-gray-100 rounded-full px-3 py-1 w-80">
+            <input
+              type="text"
+              placeholder="Rechercher un Pokémon..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 bg-transparent outline-none text-sm px-2"
+            />
+          </div>
+        )}
+
+        {/* Profil */}
+        <div className="flex items-center gap-4 h-8 bg-[#EC533A] p-4 text-white rounded-md border border-black ">
           <Dropdown
             label="Mon Profil"
             inline
@@ -66,7 +98,7 @@ export default function MyNavbar() {
           >
             <div className="px-3 py-2">
               <div className="flex flex-row gap-1 items-center">
-                <span className="block text-sm text-gray-500">Pseudo</span>
+                <span className="block text-sm text-gray-500">Pseudo </span>
                 <Pen className="size-4 text-[#EC533A]" />
               </div>
               <input
@@ -84,7 +116,7 @@ export default function MyNavbar() {
             </div>
             <DropdownDivider />
             <DropdownItem>
-              <Button className="w-full h-6 bg-[#EC533A] hover:bg-red-600 text-white border border-black">
+              <Button className="w-full h-6 bg-[#EC533A] hover:bg-orange-700 text-white border border-black">
                 Déconnexion
               </Button>
             </DropdownItem>
@@ -95,24 +127,23 @@ export default function MyNavbar() {
           </Dropdown>
         </div>
       </Navbar>
-      {/* MENU FILTRES */}
-      {showFilters && (
+
+      {/* MENU FILTRES (uniquement accueil + si toggle actif) */}
+      {pathname === "/" && showFilters && (
         <aside className="absolute top-16 left-0 w-60 bg-white rounded-lg border-solid border-black border-1 shadow-lg p-4 z-40">
           <h3 className="text-sm font-semibold mb-3">Générations</h3>
           <div className="flex flex-col gap-3">
             {generations.map((g) => (
-              <label
-                key={g.id}
-                className="flex items-center gap-2 cursor-pointer"
-              >
+              <label key={g.id} className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="generation"
-                  className="text-[#EC533A]"
+                  checked={filters.generation === g.id} // ✅ safe
+                  onChange={() =>
+                    setFilters({ ...filters, generation: g.id })
+                  }
                 />
-                <div>
-                  <p className="text-sm font-medium">{g.nom}</p>
-                </div>
+                <p className="text-sm font-medium">{g.nom}</p>
               </label>
             ))}
           </div>
@@ -120,17 +151,26 @@ export default function MyNavbar() {
           <h3 className="text-sm font-semibold my-3">Types</h3>
           <div className="flex flex-col gap-3">
             {types.map((t) => (
-              <label
-                key={t.id}
-                className="flex items-center gap-2 cursor-pointer"
-              >
+              <label key={t.id} className="flex items-center gap-2 cursor-pointer">
                 <Checkbox
                   id={`type-${t.id}`}
+                  checked={filters.types.includes(t.name)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setFilters({
+                        ...filters,
+                        types: [...filters.types, t.name],
+                      });
+                    } else {
+                      setFilters({
+                        ...filters,
+                        types: filters.types.filter((x) => x !== t.name),
+                      });
+                    }
+                  }}
                   className="text-[#EC533A]"
                 />
-                <div>
-                  <p className="text-sm font-medium text-black">{t.name}</p>
-                </div>
+                <p className="text-sm font-medium text-black">{t.name}</p>
               </label>
             ))}
           </div>
