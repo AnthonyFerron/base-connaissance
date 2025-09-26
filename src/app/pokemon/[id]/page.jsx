@@ -2,12 +2,19 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 export default function PokemonPage() {
   const { id } = useParams();
   const [pokemon, setPokemon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showCommentForm, setShowCommentForm] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [commentLoading, setCommentLoading] = useState(false);
+
+  const [user, setUser] = useState(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
 
   useEffect(() => {
     async function fetchPokemon() {
@@ -24,8 +31,100 @@ export default function PokemonPage() {
         setLoading(false);
       }
     }
+
+    async function fetchUser() {
+      setSessionLoading(true);
+      try {
+        const sessionRes = await fetch("/api/auth/get-session", {
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          if (sessionData?.user) {
+            setUser(sessionData.user);
+            return;
+          }
+        }
+
+        const session = await authClient.getSession();
+        if (session?.user) {
+          setUser(session.user);
+        } else {
+          setUser(null);
+        }
+      } catch (e) {
+        setUser(null);
+      } finally {
+        setSessionLoading(false);
+      }
+    }
+
     if (id) fetchPokemon();
+    fetchUser();
   }, [id]);
+
+  // Écouter les changements de focus pour rafraîchir la session
+  useEffect(() => {
+    const handleFocus = () => {
+      async function refetchUser() {
+        try {
+          const session = await authClient.getSession();
+          if (session?.user && !user) {
+            setUser(session.user);
+          }
+        } catch (e) {
+          // Session non disponible
+        }
+      }
+      refetchUser();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [user]);
+
+  const handleSubmitComment = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim() || !user) return;
+
+    setCommentLoading(true);
+    try {
+      const response = await fetch(`/api/pokemon/${id}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          texte: newComment,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'ajout du commentaire");
+      }
+
+      const newCommentData = await response.json();
+
+      // Ajouter le nouveau commentaire à la liste
+      setPokemon((prev) => ({
+        ...prev,
+        comments: [...(prev.comments || []), newCommentData],
+      }));
+
+      // Réinitialiser le formulaire
+      setNewComment("");
+      setShowCommentForm(false);
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("Erreur lors de l'ajout du commentaire");
+    } finally {
+      setCommentLoading(false);
+    }
+  };
 
   if (loading) return <div className="text-center py-12">Chargement...</div>;
   if (error)
@@ -115,29 +214,60 @@ export default function PokemonPage() {
               {description}
             </p>
           </div>
-          <div className="flex gap-2 mt-2">
-            <button className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold shadow transition">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-5 h-5"
+          <div className="flex gap-2 mt-10">
+            {sessionLoading ? (
+              <div className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-500 rounded-lg text-sm font-semibold">
+                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                Vérification...
+              </div>
+            ) : user ? (
+              <button
+                onClick={() => setShowCommentForm(!showCommentForm)}
+                className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold shadow transition"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 20.25c4.97 0 9-2.686 9-6V7.5c0-3.314-4.03-6-9-6s-9 2.686-9 6v6.75c0 3.314 4.03 6 9 6z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8.25 10.5h7.5"
-                />
-              </svg>
-              Commenter
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 20.25c4.97 0 9-2.686 9-6V7.5c0-3.314-4.03-6-9-6s-9 2.686-9 6v6.75c0 3.314 4.03 6 9 6z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.25 10.5h7.5"
+                  />
+                </svg>
+                {showCommentForm ? "Annuler" : "Commenter"}
+              </button>
+            ) : (
+              <a
+                href="/login"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-600 hover:text-gray-700 rounded-lg text-sm font-semibold transition"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                  />
+                </svg>
+                Connectez-vous pour commenter
+              </a>
+            )}
             <button className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-semibold shadow transition">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -158,22 +288,104 @@ export default function PokemonPage() {
           </div>
         </div>
       </div>
-      {/* Commentaires (si présents) */}
-      {pokemon.comments && pokemon.comments.length > 0 && (
-        <div className="w-full max-w-4xl flex flex-col gap-4 mt-8">
-          {pokemon.comments.map((c) => (
-            <div
-              key={c.id}
-              className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 border-l-4 border-green-500"
-            >
-              <div className="font-bold flex items-center gap-2 text-gray-800">
-                <span>👤</span> {c.author?.name || "Utilisateur inconnu"}
-              </div>
-              <div className="text-gray-700 text-sm">{c.texte}</div>
+
+      {/* Formulaire d'ajout de commentaire */}
+      {showCommentForm && user && (
+        <div className="w-full max-w-4xl bg-white rounded-xl shadow p-6 mt-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-sm font-semibold">
+                {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+              </span>
             </div>
-          ))}
+            <div>
+              <h3 className="font-bold text-lg">Ajouter un commentaire</h3>
+              <p className="text-sm text-gray-600">
+                En tant que {user.name || user.email}
+              </p>
+            </div>
+          </div>
+          <form onSubmit={handleSubmitComment} className="space-y-4">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Écrivez votre commentaire..."
+              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              rows="4"
+              required
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => setShowCommentForm(false)}
+                className="px-4 py-2 text-gray-600 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-semibold transition"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                disabled={commentLoading || !newComment.trim()}
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white rounded-lg text-sm font-semibold transition"
+              >
+                {commentLoading ? "Envoi..." : "Publier"}
+              </button>
+            </div>
+          </form>
         </div>
       )}
+
+      {/* Section Commentaires */}
+      <div className="w-full max-w-4xl mt-8">
+        <h2 className="text-xl font-bold mb-6 text-gray-800">
+          Commentaires ({pokemon.comments?.length || 0})
+        </h2>
+
+        {pokemon.comments && pokemon.comments.length > 0 ? (
+          <div className="flex flex-col gap-4">
+            {pokemon.comments.map((c) => (
+              <div
+                key={c.id}
+                className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-semibold">
+                        {(c.author?.name || "U").charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800">
+                        {c.author?.name || "Utilisateur inconnu"}
+                      </div>
+                      {c.createdAt && (
+                        <div className="text-xs text-gray-500">
+                          {new Date(c.createdAt).toLocaleDateString("fr-FR", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-gray-700 leading-relaxed">{c.texte}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-gray-50 rounded-xl p-8 text-center">
+            <div className="text-gray-400 text-lg mb-2">💬</div>
+            <p className="text-gray-600">Aucun commentaire pour le moment.</p>
+            <p className="text-gray-500 text-sm mt-1">
+              Soyez le premier à commenter ce Pokémon !
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
