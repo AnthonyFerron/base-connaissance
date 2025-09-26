@@ -39,10 +39,7 @@ export default function Home() {
   return (
     <main>
       {/* hero */}
-      <section
-        className="relative h-[60vh] flex items-center justify-center bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/background.jpg')" }}
-      >
+      <section className="relative h-[60vh] flex items-center justify-center bg-cover bg-center">
         <div className="absolute inset-0 bg-gray-500 bg-opacity-40" />
         <div className="relative z-10 text-center">
           <h1 className="text-5xl md:text-7xl font-extrabold text-white drop-shadow-lg">
