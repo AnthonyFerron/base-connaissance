@@ -43,8 +43,9 @@ model User {
 }
 
 model Generation {
-  id  Int    @id @default(autoincrement())
-  nom String @unique
+  id               Int    @id @default(autoincrement())
+  name             String @unique
+  generationNumber Int    @unique
 
   pokemons Pokemon[]
 
@@ -86,7 +87,7 @@ model Pokemon {
 
 model Commentaire {
   id        Int      @id @default(autoincrement())
-  texte     String
+  text      String
   createdAt DateTime @default(now())
 
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -112,8 +113,8 @@ model Request {
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   authorId String
 
-  pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  pokemonId Int
+  pokemon   Pokemon? @relation(fields: [pokemonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  pokemonId Int?
 
   @@index([authorId])
   @@index([pokemonId])

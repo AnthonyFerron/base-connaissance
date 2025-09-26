@@ -7,66 +7,75 @@ async function main() {
   // Créer les générations
   const generations = await Promise.all([
     prisma.generation.upsert({
-      where: { nom: "1. Kanto" },
+      where: { name: "1. Kanto" },
       update: {},
       create: {
-        nom: "1. Kanto",
+        name: "1. Kanto",
+        generationNumber: 1,
       },
     }),
     prisma.generation.upsert({
-      where: { nom: "2. Johto" },
+      where: { name: "2. Johto" },
       update: {},
       create: {
-        nom: "2. Johto",
+        name: "2. Johto",
+        generationNumber: 2,
       },
     }),
     prisma.generation.upsert({
-      where: { nom: "3. Hoenn" },
+      where: { name: "3. Hoenn" },
       update: {},
       create: {
-        nom: "3. Hoenn",
+        name: "3. Hoenn",
+        generationNumber: 3,
       },
     }),
     prisma.generation.upsert({
-      where: { nom: "4. Sinnoh" },
+      where: { name: "4. Sinnoh" },
       update: {},
       create: {
-        nom: "4. Sinnoh",
+        name: "4. Sinnoh",
+        generationNumber: 4,
       },
     }),
     prisma.generation.upsert({
-      where: { nom: "5. Unys" },
+      where: { name: "5. Unys" },
       update: {},
       create: {
-        nom: "5. Unys",
+        name: "5. Unys",
+        generationNumber: 5,
       },
     }),
     prisma.generation.upsert({
-      where: { nom: "6. Kalos" },
+      where: { name: "6. Kalos" },
       update: {},
       create: {
-        nom: "6. Kalos",
+        name: "6. Kalos",
+        generationNumber: 6,
       },
     }),
     prisma.generation.upsert({
-      where: { nom: "7. Alola" },
+      where: { name: "7. Alola" },
       update: {},
       create: {
-        nom: "7. Alola",
+        name: "7. Alola",
+        generationNumber: 7,
       },
     }),
     prisma.generation.upsert({
-      where: { nom: "8. Galar" },
+      where: { name: "8. Galar" },
       update: {},
       create: {
-        nom: "8. Galar",
+        name: "8. Galar",
+        generationNumber: 8,
       },
     }),
     prisma.generation.upsert({
-      where: { nom: "9. Paldea" },
+      where: { name: "9. Paldea" },
       update: {},
       create: {
-        nom: "9. Paldea",
+        name: "9. Paldea",
+        generationNumber: 9,
       },
     }),
   ]);
@@ -579,7 +588,7 @@ async function main() {
   // Créer quelques commentaires
   await prisma.commentaire.create({
     data: {
-      texte: "Bulbizarre est un excellent choix pour commencer l'aventure !",
+      text: "Bulbizarre est un excellent choix pour commencer l'aventure !",
       authorId: adminUser.id,
       pokemonId: bulbizarre.id,
     },
@@ -587,7 +596,7 @@ async function main() {
 
   await prisma.commentaire.create({
     data: {
-      texte: "Pikachu est vraiment adorable et très populaire !",
+      text: "Pikachu est vraiment adorable et très populaire !",
       authorId: adminUser.id,
       pokemonId: pikachu.id,
     },
