@@ -1,6 +1,7 @@
 "use client";
 
 import MyNavbar from "./components/NavBar";
+import Footer from "./components/Footer";
 import "./globals.css";
 import { FiltersProvider } from "./providers/FiltersProvider";
 import { AuthProvider } from "./providers/AuthProvider";

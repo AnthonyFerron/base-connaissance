@@ -224,6 +224,7 @@ export default function MyNavbar() {
           <h3 className="text-sm font-semibold mb-3">Générations</h3>
           <div className="flex flex-col gap-3 ">
             {generations.map((g) => (
+
               <label key={g.id} className="flex gap-2 cursor-pointer items-start">
                 <input
                   type="radio"
@@ -247,7 +248,10 @@ export default function MyNavbar() {
           <h3 className="text-sm font-semibold my-3">Types</h3>
           <div className="flex flex-col gap-3">
             {types.map((t) => (
-              <label key={t.id} className="flex items-center gap-2 cursor-pointer">
+              <label
+                key={t.id}
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <Checkbox
                   id={`type-${t.id}`}
                   checked={filters.types.includes(t.name)}
