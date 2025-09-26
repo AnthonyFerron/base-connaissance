@@ -22,7 +22,7 @@ export default function CardPokemon({ pokemon }) {
             : `${color1} border-box`,
       }}
     >
-      <Card className="text-center shadow-md rounded-lg overflow-hidden bg-white">
+      <Card className="text-center shadow-md rounded-lg overflow-hidden !bg-white">
         {/* Image */}
         <div className="flex justify-center bg-gray-200 h-28 w-full">
        
@@ -42,12 +42,15 @@ export default function CardPokemon({ pokemon }) {
               className="p-1 pt-0.5 h-6 rounded-3xl text-white text-xs font-medium"
               style={{ backgroundColor: t.color }}
             >
+              {t.image}
               {t.name}
             </span>
           ))}
 
         {/* Génération */}
-        <p className="text-sm text-gray-500 ">{pokemon.generation.nom}</p>
+
+        <p className="text-sm text-gray-500 ">GEN</p>
+        <p className="text-sm text-gray-500 ">{pokemon.generation.id}.{pokemon.generation.nom}</p>
         </div>
 
       </Card>

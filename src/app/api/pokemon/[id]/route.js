@@ -11,6 +11,19 @@ export async function GET(request, context) {
       include: {
         types: true,
         generation: true,
+        comments: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
     if (!pokemon) {
