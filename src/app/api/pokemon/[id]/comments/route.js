@@ -70,7 +70,7 @@ export async function POST(request, context) {
     // Créer le commentaire
     const newComment = await prisma.commentaire.create({
       data: {
-        texte,
+        text: texte,
         authorId: session.user.id,
         pokemonId: Number(id),
       },

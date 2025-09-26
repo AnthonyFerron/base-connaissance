@@ -142,9 +142,30 @@ export default function PokemonPage() {
     description = pokemon.content;
   }
 
+  // Créer le dégradé basé sur les types du Pokémon
+  let backgroundGradient = "linear-gradient(to bottom, #f3f4f6, #e5e7eb)"; // fond par défaut
+
+  if (pokemon.types && pokemon.types.length > 0) {
+    const primaryColor = pokemon.types[0].color;
+
+    if (pokemon.types.length === 1) {
+      // Un seul type : dégradé continu de 70% à 30%
+      backgroundGradient = `linear-gradient(135deg, ${primaryColor}B3, ${primaryColor}4D)`;
+    } else {
+      // Deux types : dégradé du coin haut gauche vers bas droit
+      const secondaryColor = pokemon.types[1].color;
+      backgroundGradient = `linear-gradient(135deg, ${primaryColor}B3, ${secondaryColor}B3)`;
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-cover bg-center flex flex-col items-center py-8 px-2">
-      <div className="flex flex-col p-5 w-9/10 bg-white rounded-2xl gap-8">
+    <div
+      className="min-h-screen bg-cover bg-center flex flex-col items-center py-8 px-2"
+      style={{
+        background: backgroundGradient,
+      }}
+    >
+      <div className="flex flex-col p-5 w-9/10 bg-white rounded-2xl gap-8 border border-black">
         {/* Image à gauche */}
         <div className="flex flex-row w-full">
           <div className="flex-shrink-0 flex flex-col p-3 bg-[#D9D9D9] rounded-[24px] items-center justify-center w-1/2 md:w-1/3">
@@ -169,7 +190,7 @@ export default function PokemonPage() {
               <div className="py-2 border-b border-gray-200">
                 <span className="text-gray-500 text-sm">Génération:</span>
                 <span className="font-bold text-[24px] ml-2 align-middle">
-                  {pokemon.generation?.nom}
+                  {pokemon.generation?.name}
                 </span>
               </div>
               <div className="py-2 border-b border-gray-200">
@@ -291,7 +312,7 @@ export default function PokemonPage() {
 
       {/* Formulaire d'ajout de commentaire */}
       {showCommentForm && user && (
-        <div className="w-full max-w-4xl bg-white rounded-xl shadow p-6 mt-6">
+        <div className="w-9/10 bg-white rounded-xl shadow p-6 mt-6 border border-black">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
               <span className="text-white text-sm font-semibold">
@@ -335,7 +356,7 @@ export default function PokemonPage() {
       )}
 
       {/* Section Commentaires */}
-      <div className="w-full max-w-4xl mt-8">
+      <div className="w-9/10 mt-8">
         <h2 className="text-xl font-bold mb-6 text-gray-800">
           Commentaires ({pokemon.comments?.length || 0})
         </h2>
@@ -345,7 +366,7 @@ export default function PokemonPage() {
             {pokemon.comments.map((c) => (
               <div
                 key={c.id}
-                className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl shadow-sm p-6 border border-black hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -372,12 +393,12 @@ export default function PokemonPage() {
                     </div>
                   </div>
                 </div>
-                <div className="text-gray-700 leading-relaxed">{c.texte}</div>
+                <div className="text-gray-700 leading-relaxed">{c.text}</div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="bg-gray-50 rounded-xl p-8 text-center">
+          <div className="bg-gray-50 rounded-xl p-8 text-center border border-black">
             <div className="text-gray-400 text-lg mb-2">💬</div>
             <p className="text-gray-600">Aucun commentaire pour le moment.</p>
             <p className="text-gray-500 text-sm mt-1">

@@ -14,7 +14,7 @@ export default function CardPokemon({ pokemon }) {
   return (
     // Wrapper qui simule la bordure
     <div
-      className="rounded-lg p-[4px] w-60" 
+      className="rounded-lg p-[4px] w-60"
       style={{
         background:
           types.length > 1
@@ -24,9 +24,7 @@ export default function CardPokemon({ pokemon }) {
     >
       <Card className="text-center shadow-md rounded-lg overflow-hidden bg-white">
         {/* Image */}
-        <div className="flex justify-center bg-gray-200 h-28 w-full">
-       
-        </div>
+        <div className="flex justify-center bg-gray-200 h-28 w-full"></div>
 
         {/* Nom + id */}
         <div className="flex justify-between px-2">
@@ -46,10 +44,9 @@ export default function CardPokemon({ pokemon }) {
             </span>
           ))}
 
-        {/* Génération */}
-        <p className="text-sm text-gray-500 ">{pokemon.generation.nom}</p>
+          {/* Génération */}
+          <p className="text-sm text-gray-500 ">{pokemon.generation.name}</p>
         </div>
-
       </Card>
     </div>
   );
