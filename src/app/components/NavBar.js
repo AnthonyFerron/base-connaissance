@@ -44,7 +44,7 @@ export default function MyNavbar() {
   return (
     <>
       {/* NAVBAR */}
-      <Navbar className="bg-white shadow-md px-4 justify-between">
+      <Navbar className="!bg-white shadow-md px-4 justify-between">
         {/* Gauche : Filtres ou Retour */}
         <div className="flex items-center gap-6">
           {pathname === "/" ? (
@@ -134,14 +134,15 @@ export default function MyNavbar() {
           <h3 className="text-sm font-semibold mb-3">Générations</h3>
           <div className="flex flex-col gap-3">
             {generations.map((g) => (
-              <label key={g.id} className="flex items-center gap-2 cursor-pointer">
+              <label
+                key={g.id}
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <input
                   type="radio"
                   name="generation"
                   checked={filters.generation === g.id} // ✅ safe
-                  onChange={() =>
-                    setFilters({ ...filters, generation: g.id })
-                  }
+                  onChange={() => setFilters({ ...filters, generation: g.id })}
                 />
                 <p className="text-sm font-medium">{g.nom}</p>
               </label>
@@ -151,7 +152,10 @@ export default function MyNavbar() {
           <h3 className="text-sm font-semibold my-3">Types</h3>
           <div className="flex flex-col gap-3">
             {types.map((t) => (
-              <label key={t.id} className="flex items-center gap-2 cursor-pointer">
+              <label
+                key={t.id}
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <Checkbox
                   id={`type-${t.id}`}
                   checked={filters.types.includes(t.name)}
