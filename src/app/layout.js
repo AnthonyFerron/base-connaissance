@@ -5,7 +5,6 @@ import Footer from "./components/Footer";
 import "./globals.css";
 import { FiltersProvider } from "./providers/FiltersProvider";
 import { AuthProvider } from "./providers/AuthProvider";
-import Footer from "./components/Footer";
 import { createContext, useState } from "react";
 
 export const SidebarContext = createContext();

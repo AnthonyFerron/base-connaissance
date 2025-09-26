@@ -117,14 +117,14 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="mx-auto bg-gray-200">
-        <section className="px-6 py-10 min-h-[300px]">
+      <div className="px-10 flex justify-center bg-gray-200">
+        <section className="flex m-5 px-6 py-10 min-h-[300px]">
           {filteredPokemons.length === 0 ? (
             <p className="text-center text-gray-600 text-lg font-medium">
               Aucun Pokémon trouvé 😢
             </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-15">
               {filteredPokemons.map((p) => (
                 <CardPokemon key={p.id} pokemon={p} />
               ))}
