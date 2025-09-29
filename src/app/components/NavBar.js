@@ -10,14 +10,13 @@ import {
   Checkbox,
 } from "flowbite-react";
 import { ChevronLeft, CirclePlus, Pen, Search, X } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import { useFilters } from "../providers/FiltersProvider";
-import { useAuth } from "../providers/AuthProvider";
+// import { useAuth } from "../providers/AuthProvider";
 import Image from "next/image";
 import { SidebarContext } from "../layout";
 
 export default function MyNavbar() {
-  
   const { showSidebar, setShowSidebar } = useContext(SidebarContext);
   const [generations, setGenerations] = useState([]);
   const [types, setTypes] = useState([]);
@@ -25,10 +24,9 @@ export default function MyNavbar() {
   const router = useRouter();
 
   const { filters, setFilters, search, setSearch } = useFilters();
-  const { user, logout, updateUser } = useAuth();
+  // const { user, logout, updateUser } = useAuth();
   const openSidebar = () => setShowSidebar(true);
   const closeSidebar = () => setShowSidebar(false);
-  
 
   // ✅ Déconnexion
   const handleLogout = async () => {
@@ -41,14 +39,14 @@ export default function MyNavbar() {
   };
 
   // ✅ Mise à jour du pseudo
-  const handlePseudoUpdate = async (e) => {
-    try {
-      const newPseudo = e.target.value;
-      await updateUser({ name: newPseudo });
-    } catch (error) {
-      console.error("Erreur update pseudo:", error);
-    }
-  };
+  // const handlePseudoUpdate = async (e) => {
+  //   try {
+  //     const newPseudo = e.target.value;
+  //     await updateUser({ name: newPseudo });
+  //   } catch (error) {
+  //     console.error("Erreur update pseudo:", error);
+  //   }
+  // };
 
   // ✅ Suppression logique du compte
   const handleDeleteAccount = async () => {
@@ -100,6 +98,10 @@ export default function MyNavbar() {
     return null;
   }
 
+  const handleCreate = () => {
+    redirect("/create");
+  };
+
   return (
     <>
       {/* NAVBAR */}
@@ -108,7 +110,7 @@ export default function MyNavbar() {
         <div className="flex items-center gap-6">
           {pathname === "/" ? (
             <Button
-               onClick={openSidebar}
+              onClick={openSidebar}
               className="bg-[#EC533A] hover:bg-orange-700 h-8 text-white rounded-lg px-2 py-1 border border-black"
             >
               Filtres
@@ -124,7 +126,10 @@ export default function MyNavbar() {
 
           {/* Bouton Créer */}
           <div className="flex flex-col items-center">
-            <Button className="bg-[#EC533A] hover:bg-orange-700 rounded-full p-0.5">
+            <Button
+              onClick={handleCreate}
+              className="bg-[#EC533A] hover:bg-orange-700 rounded-full p-0.5"
+            >
               <CirclePlus className="h-9 w-9 text-white" />
             </Button>
             <span className="text-sm mt-1">Créer</span>
@@ -174,8 +179,8 @@ export default function MyNavbar() {
                 </div>
                 <input
                   type="text"
-                  value={user?.name || ""}
-                  onChange={handlePseudoUpdate}
+                  // value={user?.name || ""}
+                  // onChange={handlePseudoUpdate}
                   placeholder="Choisir un pseudo..."
                   className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm font-semibold focus:ring-2 focus:ring-[#EC533A]"
                 />
@@ -183,7 +188,7 @@ export default function MyNavbar() {
                   Adresse e-mail
                 </span>
                 <span className="block text-sm font-semibold truncate">
-                  {user?.email || ""}
+                  {/* {user?.email || ""} */}
                 </span>
               </div>
               <DropdownDivider />
@@ -224,20 +229,22 @@ export default function MyNavbar() {
           <h3 className="text-sm font-semibold mb-3">Générations</h3>
           <div className="flex flex-col gap-3 ">
             {generations.map((g) => (
-
-              <label key={g.id} className="flex gap-2 cursor-pointer items-start">
+              <label
+                key={g.id}
+                className="flex gap-2 cursor-pointer items-start"
+              >
                 <input
                   type="radio"
                   name="generation"
                   className="text-[#EC533A]"
                   checked={filters.generation === g.id}
-                  onChange={() =>
-                    setFilters({ ...filters, generation: g.id })
-                  }
+                  onChange={() => setFilters({ ...filters, generation: g.id })}
                 />
                 <div className="flex flex-col ">
-                <p className="flex text-sm font-medium">Génération {g.id}</p>
-                <p className="flex text-sm font-medium text-gray-400">{g.nom}</p>
+                  <p className="flex text-sm font-medium">Génération {g.id}</p>
+                  <p className="flex text-sm font-medium text-gray-400">
+                    {g.nom}
+                  </p>
                 </div>
               </label>
             ))}
