@@ -9,10 +9,10 @@ import {
   DropdownDivider,
   Checkbox,
 } from "flowbite-react";
-import { ChevronLeft, CirclePlus, Pen, Search, X } from "lucide-react";
+import { ChevronLeft, CirclePlus, Pen, Search, X, Shield } from "lucide-react";
 import { redirect, usePathname, useRouter } from "next/navigation";
 import { useFilters } from "../providers/FiltersProvider";
-// import { useAuth } from "../providers/AuthProvider";
+import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
 import { SidebarContext } from "../layout";
 
@@ -20,42 +20,51 @@ export default function MyNavbar() {
   const { showSidebar, setShowSidebar } = useContext(SidebarContext);
   const [generations, setGenerations] = useState([]);
   const [types, setTypes] = useState([]);
+  const [user, setUser] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
 
   const { filters, setFilters, search, setSearch } = useFilters();
-  // const { user, logout, updateUser } = useAuth();
   const openSidebar = () => setShowSidebar(true);
   const closeSidebar = () => setShowSidebar(false);
+
+  // Charger l'utilisateur
+  useEffect(() => {
+    const loadUser = async () => {
+      const session = await authClient.getSession();
+      if (session?.user) {
+        setUser(session.user);
+      }
+    };
+    loadUser();
+  }, []);
 
   // ✅ Déconnexion
   const handleLogout = async () => {
     try {
-      await logout();
-      router.push("/login");
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/login");
+          },
+          onError: (ctx) => {
+            console.error("Logout failed:", ctx.error);
+          },
+        },
+      });
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error("Logout error:", error);
+      // Rediriger quand même vers la page de login
+      router.push("/login");
     }
   };
-
-  // ✅ Mise à jour du pseudo
-  // const handlePseudoUpdate = async (e) => {
-  //   try {
-  //     const newPseudo = e.target.value;
-  //     await updateUser({ name: newPseudo });
-  //   } catch (error) {
-  //     console.error("Erreur update pseudo:", error);
-  //   }
-  // };
 
   // ✅ Suppression logique du compte
   const handleDeleteAccount = async () => {
     try {
-      await updateUser({
-        name: "deletedUser",
-        email: "deleted@pokeme.com",
-        role: "deleted",
-      });
+      // TODO: Implémenter la suppression du compte
+      console.log("Suppression du compte à implémenter");
+      alert("Fonctionnalité de suppression de compte à implémenter");
     } catch (error) {
       console.error("Erreur suppression compte:", error);
     }
@@ -99,7 +108,11 @@ export default function MyNavbar() {
   }
 
   const handleCreate = () => {
-    redirect("/create");
+    router.push("/create");
+  };
+
+  const handleGoBack = () => {
+    router.back();
   };
 
   return (
@@ -118,7 +131,7 @@ export default function MyNavbar() {
           ) : (
             <Button
               className="bg-[#EC533A] hover:bg-orange-700 h-8 text-white rounded-lg px-2 py-1 border border-black"
-              onClick={() => window.history.back()}
+              onClick={handleGoBack}
             >
               <ChevronLeft className="size-5 mr-1" /> Retour
             </Button>
@@ -192,6 +205,15 @@ export default function MyNavbar() {
                 </span>
               </div>
               <DropdownDivider />
+              {user?.role === "ADMIN" && (
+                <>
+                  <DropdownItem onClick={() => router.push("/admin")}>
+                    <Shield className="mr-2 h-4 w-4" />
+                    Administration
+                  </DropdownItem>
+                  <DropdownDivider />
+                </>
+              )}
               <DropdownItem>
                 <Button
                   onClick={handleLogout}

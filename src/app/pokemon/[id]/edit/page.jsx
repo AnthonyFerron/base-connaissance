@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { authClient } from "@/lib/auth-client";
 
-export default function CreatePokemonPage() {
+export default function EditPokemonPage() {
   const router = useRouter();
+  const { id } = useParams();
   const [formData, setFormData] = useState({
     idPokedex: "",
     generationId: "",
@@ -17,7 +18,9 @@ export default function CreatePokemonPage() {
   const [generations, setGenerations] = useState([]);
   const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingPokemon, setLoadingPokemon] = useState(true);
   const [imagePreview, setImagePreview] = useState(null);
+  const [currentPhoto, setCurrentPhoto] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -26,7 +29,6 @@ export default function CreatePokemonPage() {
   useEffect(() => {
     async function checkAuth() {
       try {
-        // Essayer de récupérer la session depuis l'API
         const response = await fetch("/api/auth/get-session", {
           credentials: "include",
           headers: {
@@ -37,33 +39,65 @@ export default function CreatePokemonPage() {
         if (response.ok) {
           const data = await response.json();
           if (data && data.user) {
-            // Utilisateur connecté
             setCheckingAuth(false);
             return;
           }
         }
 
-        // Si l'API échoue, essayer avec authClient
         const session = await authClient.getSession();
         if (session && session.user) {
           setCheckingAuth(false);
           return;
         }
 
-        // Aucune session trouvée, rediriger vers login
         router.push("/login");
       } catch (error) {
         console.error("Erreur vérification auth:", error);
-        // En cas d'erreur, rediriger vers login
         router.push("/login");
       }
     }
     checkAuth();
   }, [router]);
 
+  // Charger les données du Pokémon existant
+  useEffect(() => {
+    if (checkingAuth || !id) return;
+
+    async function loadPokemon() {
+      try {
+        const response = await fetch(`/api/pokemon/${id}`);
+        if (!response.ok) throw new Error("Pokémon non trouvé");
+
+        const pokemon = await response.json();
+
+        // Extraire les données du content JSON
+        const idPokedex = pokemon.content?.idpokedex || pokemon.id;
+        const description = pokemon.content?.description || "";
+
+        setFormData({
+          idPokedex: idPokedex.toString(),
+          generationId: pokemon.generationId.toString(),
+          nom: pokemon.name,
+          typeIds: pokemon.types.map((t) => t.id),
+          description: description,
+          photo: null,
+        });
+        setCurrentPhoto(pokemon.photo);
+        setImagePreview(pokemon.photo);
+      } catch (error) {
+        console.error("Erreur chargement Pokémon:", error);
+        setError("Erreur lors du chargement du Pokémon");
+      } finally {
+        setLoadingPokemon(false);
+      }
+    }
+
+    loadPokemon();
+  }, [checkingAuth, id]);
+
   // Charger les générations et types
   useEffect(() => {
-    if (checkingAuth) return; // Ne pas charger les données tant que l'auth n'est pas vérifiée
+    if (checkingAuth) return;
 
     async function loadData() {
       try {
@@ -100,7 +134,6 @@ export default function CreatePokemonPage() {
         photo: file,
       }));
 
-      // Créer un aperçu
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result);
@@ -129,15 +162,14 @@ export default function CreatePokemonPage() {
     setSuccess(false);
 
     try {
-      // Validation côté client
       if (formData.typeIds.length === 0) {
         setError("Veuillez sélectionner au moins un type");
         setLoading(false);
         return;
       }
 
-      // Créer le FormData pour l'envoi
       const submitData = new FormData();
+      submitData.append("pokemonId", id);
       submitData.append("nom", formData.nom);
       submitData.append("idPokedex", formData.idPokedex);
       submitData.append("generationId", formData.generationId);
@@ -146,10 +178,12 @@ export default function CreatePokemonPage() {
 
       if (formData.photo) {
         submitData.append("photo", formData.photo);
+      } else {
+        submitData.append("currentPhoto", currentPhoto);
       }
 
-      // Envoyer à l'API
-      const response = await fetch("/api/pokemon", {
+      // Envoyer à l'API de modification
+      const response = await fetch("/api/pokemon/update", {
         method: "POST",
         body: submitData,
       });
@@ -157,34 +191,35 @@ export default function CreatePokemonPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Erreur lors de la création");
+        throw new Error(result.error || "Erreur lors de la modification");
       }
 
-      // Succès : afficher message et rediriger vers l'accueil
       setSuccess(true);
       setTimeout(() => {
-        router.push("/");
+        router.push(`/pokemon/${id}`);
       }, 2000);
     } catch (error) {
-      console.error("Erreur lors de la création:", error);
+      console.error("Erreur lors de la modification:", error);
       setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Annulation
   const handleCancel = () => {
-    router.back();
+    router.push(`/pokemon/${id}`);
   };
 
-  // Afficher un écran de chargement pendant la vérification de l'authentification
-  if (checkingAuth) {
+  if (checkingAuth || loadingPokemon) {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center py-8 px-2">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-600">Vérification de la connexion...</p>
+          <p className="text-gray-600">
+            {checkingAuth
+              ? "Vérification de la connexion..."
+              : "Chargement du Pokémon..."}
+          </p>
         </div>
       </div>
     );
@@ -194,10 +229,9 @@ export default function CreatePokemonPage() {
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 px-2">
       <div className="flex flex-col p-5 w-9/10 bg-white rounded-2xl gap-8 border border-black">
         <h1 className="text-2xl font-bold text-center mb-8">
-          Créer un Pokémon
+          Modifier un Pokémon
         </h1>
 
-        {/* Messages d'erreur et succès */}
         {error && (
           <div
             className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
@@ -215,8 +249,8 @@ export default function CreatePokemonPage() {
           >
             <strong className="font-bold">Demande envoyée ! </strong>
             <span className="block sm:inline">
-              Votre demande de création de Pokémon a été envoyée avec succès.
-              Elle sera examinée par un administrateur. Redirection en cours...
+              Votre demande de modification a été envoyée avec succès. Elle sera
+              examinée par un administrateur. Redirection en cours...
             </span>
           </div>
         )}
@@ -368,7 +402,7 @@ export default function CreatePokemonPage() {
                       />
                     </svg>
                   </div>
-                  <p className="text-gray-600 mb-2">Ajouter une image</p>
+                  <p className="text-gray-600 mb-2">Modifier l'image</p>
                   <input
                     type="file"
                     accept="image/*"
@@ -420,7 +454,7 @@ export default function CreatePokemonPage() {
               {loading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Création...
+                  Envoi...
                 </>
               ) : (
                 <>
@@ -437,7 +471,7 @@ export default function CreatePokemonPage() {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  Valider
+                  Valider la modification
                 </>
               )}
             </button>
