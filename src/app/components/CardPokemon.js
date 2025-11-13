@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "flowbite-react";
+import Image from "next/image";
 
 export default function CardPokemon({ pokemon }) {
   if (!pokemon) return null;
@@ -24,7 +25,14 @@ export default function CardPokemon({ pokemon }) {
     >
       <Card className="text-center shadow-md rounded-lg overflow-hidden !bg-white">
         {/* Image */}
-        <div className="flex justify-center bg-gray-200 h-28 w-full"></div>
+        <div className="relative flex justify-center bg-gray-200 h-28 w-full overflow-hidden">
+          <Image
+            src={pokemon.photo}
+            alt={pokemon.name}
+            fill
+            className="object-cover"
+          />
+        </div>
 
         {/* Nom + id */}
         <div className="flex justify-between px-2">
@@ -44,11 +52,12 @@ export default function CardPokemon({ pokemon }) {
               {t.name}
             </span>
           ))}
-        {/* Génération */}
+          {/* Génération */}
 
-        <p className="text-sm text-gray-500 ">GEN</p>
-        <p className="text-sm text-gray-500 ">{pokemon.generation.id}.{pokemon.generation.nom}</p>
-
+          <p className="text-sm text-gray-500 ">GEN</p>
+          <p className="text-sm text-gray-500 ">
+            {pokemon.generation.id}.{pokemon.generation.nom}
+          </p>
         </div>
       </Card>
     </div>

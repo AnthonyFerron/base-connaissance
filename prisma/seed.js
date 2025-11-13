@@ -7,74 +7,74 @@ async function main() {
   // Créer les générations
   const generations = await Promise.all([
     prisma.generation.upsert({
-      where: { name: "1. Kanto" },
+      where: { name: "Kanto" },
       update: {},
       create: {
-        name: "1. Kanto",
+        name: "Kanto",
         generationNumber: 1,
       },
     }),
     prisma.generation.upsert({
-      where: { name: "2. Johto" },
+      where: { name: "Johto" },
       update: {},
       create: {
-        name: "2. Johto",
+        name: "Johto",
         generationNumber: 2,
       },
     }),
     prisma.generation.upsert({
-      where: { name: "3. Hoenn" },
+      where: { name: "Hoenn" },
       update: {},
       create: {
-        name: "3. Hoenn",
+        name: "Hoenn",
         generationNumber: 3,
       },
     }),
     prisma.generation.upsert({
-      where: { name: "4. Sinnoh" },
+      where: { name: "Sinnoh" },
       update: {},
       create: {
-        name: "4. Sinnoh",
+        name: "Sinnoh",
         generationNumber: 4,
       },
     }),
     prisma.generation.upsert({
-      where: { name: "5. Unys" },
+      where: { name: "Unys" },
       update: {},
       create: {
-        name: "5. Unys",
+        name: "Unys",
         generationNumber: 5,
       },
     }),
     prisma.generation.upsert({
-      where: { name: "6. Kalos" },
+      where: { name: "Kalos" },
       update: {},
       create: {
-        name: "6. Kalos",
+        name: "Kalos",
         generationNumber: 6,
       },
     }),
     prisma.generation.upsert({
-      where: { name: "7. Alola" },
+      where: { name: "Alola" },
       update: {},
       create: {
-        name: "7. Alola",
+        name: "Alola",
         generationNumber: 7,
       },
     }),
     prisma.generation.upsert({
-      where: { name: "8. Galar" },
+      where: { name: "Galar" },
       update: {},
       create: {
-        name: "8. Galar",
+        name: "Galar",
         generationNumber: 8,
       },
     }),
     prisma.generation.upsert({
-      where: { name: "9. Paldea" },
+      where: { name: "Paldea" },
       update: {},
       create: {
-        name: "9. Paldea",
+        name: "Paldea",
         generationNumber: 9,
       },
     }),
@@ -277,7 +277,7 @@ async function main() {
         description:
           "Bulbizarre passe son temps à faire la sieste sous le soleil. Il y a une graine sur son dos. En absorbant les rayons du soleil, la graine grandit progressivement.",
       },
-      generationId: generations.find((g) => g.nom === "1. Kanto")?.id || 1,
+      generationId: generations.find((g) => g.name === "Kanto")?.id || 1,
       types: {
         connect: [
           { id: types.find((t) => t.name === "Plante")?.id },
@@ -299,7 +299,7 @@ async function main() {
         description:
           "Salamèche préfère les endroits chauds. En cas de pluie, de la vapeur se forme autour de l'extrémité de sa queue.",
       },
-      generationId: generations.find((g) => g.nom === "1. Kanto")?.id || 1,
+      generationId: generations.find((g) => g.name === "Kanto")?.id || 1,
       types: {
         connect: [{ id: types.find((t) => t.name === "Feu")?.id }],
       },
@@ -318,7 +318,7 @@ async function main() {
         description:
           "En agitant sa queue, Reptincel peut élever la température autour de lui à des niveaux torrides. Ses griffes sont très aiguisées.",
       },
-      generationId: generations.find((g) => g.nom === "1. Kanto")?.id || 1,
+      generationId: generations.find((g) => g.name === "Kanto")?.id || 1,
       types: {
         connect: [{ id: types.find((t) => t.name === "Feu")?.id }],
       },
@@ -337,7 +337,7 @@ async function main() {
         description:
           "Dracaufeu parcourt les cieux pour trouver des adversaires à sa mesure. Il crache un feu si chaud qu'il peut faire fondre n'importe quoi.",
       },
-      generationId: generations.find((g) => g.nom === "1. Kanto")?.id || 1,
+      generationId: generations.find((g) => g.name === "Kanto")?.id || 1,
       types: {
         connect: [
           { id: types.find((t) => t.name === "Feu")?.id },
@@ -359,7 +359,7 @@ async function main() {
         description:
           "La carapace de Carapuce se solidifie après sa naissance et devient plus résistante. Ce Pokémon crache de puissants jets d'eau.",
       },
-      generationId: generations.find((g) => g.nom === "1. Kanto")?.id || 1,
+      generationId: generations.find((g) => g.name === "Kanto")?.id || 1,
       types: {
         connect: [{ id: types.find((t) => t.name === "Eau")?.id }],
       },
@@ -378,7 +378,7 @@ async function main() {
         description:
           "Carabaffe a une queue recouverte d'une épaisse fourrure qui devient de plus en plus foncée avec l'âge. Les égratignures sur sa carapace témoignent de son expérience au combat.",
       },
-      generationId: generations.find((g) => g.nom === "1. Kanto")?.id || 1,
+      generationId: generations.find((g) => g.name === "Kanto")?.id || 1,
       types: {
         connect: [{ id: types.find((t) => t.name === "Eau")?.id }],
       },
@@ -397,7 +397,7 @@ async function main() {
         description:
           "Tortank dispose de canons à eau qui émergent de sa carapace. Ils sont très précis et peuvent toucher des cibles à plus de 160 kilomètres.",
       },
-      generationId: generations.find((g) => g.nom === "1. Kanto")?.id || 1,
+      generationId: generations.find((g) => g.name === "Kanto")?.id || 1,
       types: {
         connect: [{ id: types.find((t) => t.name === "Eau")?.id }],
       },
@@ -416,7 +416,7 @@ async function main() {
         description:
           "Quand Pikachu relâche de l'électricité à partir de ses joues, il peut arriver que ses oreilles se dressent, comme pour écouter quelque chose.",
       },
-      generationId: generations.find((g) => g.nom === "1. Kanto")?.id || 1,
+      generationId: generations.find((g) => g.name === "Kanto")?.id || 1,
       types: {
         connect: [{ id: types.find((t) => t.name === "Électrik")?.id }],
       },
@@ -435,7 +435,7 @@ async function main() {
         description:
           "Mew possède le code génétique de tous les Pokémon. Il peut se rendre invisible à volonté, ce qui lui permet de passer totalement inaperçu.",
       },
-      generationId: generations.find((g) => g.nom === "1. Kanto")?.id || 1,
+      generationId: generations.find((g) => g.name === "Kanto")?.id || 1,
       types: {
         connect: [{ id: types.find((t) => t.name === "Psy")?.id }],
       },
@@ -455,7 +455,7 @@ async function main() {
         description:
           "La coquille sur le dos de Tortipouss est faite de terre. Quand il boit de l'eau, elle devient plus dure.",
       },
-      generationId: generations.find((g) => g.nom === "4. Sinnoh")?.id || 4,
+      generationId: generations.find((g) => g.name === "Sinnoh")?.id || 4,
       types: {
         connect: [{ id: types.find((t) => t.name === "Plante")?.id }],
       },
@@ -474,7 +474,7 @@ async function main() {
         description:
           "Il vit près des lacs dans les forêts. Il sort la tête de l'eau pour grignoter les bourgeons des arbres en bordure.",
       },
-      generationId: generations.find((g) => g.nom === "4. Sinnoh")?.id || 4,
+      generationId: generations.find((g) => g.name === "Sinnoh")?.id || 4,
       types: {
         connect: [{ id: types.find((t) => t.name === "Plante")?.id }],
       },
@@ -493,7 +493,7 @@ async function main() {
         description:
           "De petits Pokémon bâtissent occasionnellement leur nid sur son dos immobile. Ce Pokémon ne s'en aperçoit pas.",
       },
-      generationId: generations.find((g) => g.nom === "4. Sinnoh")?.id || 4,
+      generationId: generations.find((g) => g.name === "Sinnoh")?.id || 4,
       types: {
         connect: [
           { id: types.find((t) => t.name === "Plante")?.id },
@@ -516,7 +516,7 @@ async function main() {
         description:
           "Il sécrète une mousse flexible sur sa poitrine et son dos. Elle amortit les coups qu'il reçoit et qu'il porte.",
       },
-      generationId: generations.find((g) => g.nom === "6. Kalos")?.id || 6,
+      generationId: generations.find((g) => g.name === "Kalos")?.id || 6,
       types: {
         connect: [{ id: types.find((t) => t.name === "Eau")?.id }],
       },
@@ -535,7 +535,7 @@ async function main() {
         description:
           "Il peut bondir à plus de 600 mètres en utilisant la mousse de ses pattes. Il prend ses ennemis par surprise en leur sautant dessus.",
       },
-      generationId: generations.find((g) => g.nom === "6. Kalos")?.id || 6,
+      generationId: generations.find((g) => g.name === "Kalos")?.id || 6,
       types: {
         connect: [{ id: types.find((t) => t.name === "Eau")?.id }],
       },
@@ -554,7 +554,7 @@ async function main() {
         description:
           "Il apparaît et disparaît à volonté comme un ninja. Il tranche ses ennemis avec des étoiles de jet faites d'eau compressée.",
       },
-      generationId: generations.find((g) => g.nom === "6. Kalos")?.id || 6,
+      generationId: generations.find((g) => g.name === "Kalos")?.id || 6,
       types: {
         connect: [
           { id: types.find((t) => t.name === "Eau")?.id },

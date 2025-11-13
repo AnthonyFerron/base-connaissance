@@ -3,45 +3,40 @@ import prisma from "@/lib/prisma";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 
-export async function GET() {
-  try {
-    const pokemons = await prisma.pokemon.findMany({
-      include: {
-        types: true,
-        generation: true,
-      },
-      orderBy: {
-        id: "asc",
-      },
-    });
-
-    return NextResponse.json(pokemons);
-  } catch (error) {
-    console.error("Erreur API /pokemons:", error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
-  }
-}
-
+// Créer une demande de modification de Pokémon (Request)
 export async function POST(request) {
   try {
     const formData = await request.formData();
 
+    // Extraction des données
+    const pokemonId = parseInt(formData.get("pokemonId"));
     const nom = formData.get("nom");
     const idPokedex = parseInt(formData.get("idPokedex"));
     const generationId = parseInt(formData.get("generationId"));
     const description = formData.get("description");
     const typeIds = formData.get("typeIds");
     const photo = formData.get("photo");
+    const currentPhoto = formData.get("currentPhoto");
 
-    if (!nom || !idPokedex || !generationId || !description || !typeIds) {
+    // Validation des champs requis
+    if (
+      !pokemonId ||
+      !nom ||
+      !idPokedex ||
+      !generationId ||
+      !description ||
+      !typeIds
+    ) {
       return NextResponse.json(
         { error: "Tous les champs sont requis" },
         { status: 400 }
       );
     }
 
+    // Parser les IDs des types
     const parsedTypeIds = JSON.parse(typeIds);
 
+    // Valider qu'il y a au moins 1 type et max 2 types
     if (parsedTypeIds.length === 0 || parsedTypeIds.length > 2) {
       return NextResponse.json(
         { error: "Un Pokémon doit avoir entre 1 et 2 types" },
@@ -49,22 +44,13 @@ export async function POST(request) {
       );
     }
 
-    const existingPokemon = await prisma.pokemon.findUnique({
-      where: { name: nom },
-    });
-
-    if (existingPokemon) {
-      return NextResponse.json(
-        { error: "Un Pokémon avec ce nom existe déjà" },
-        { status: 409 }
-      );
-    }
-
-    let photoUrl = "";
+    // Gestion de l'upload de l'image
+    let photoUrl = currentPhoto || "";
     if (photo && photo.size > 0) {
       const bytes = await photo.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
+      // Créer un nom de fichier unique
       const timestamp = Date.now();
       const fileName = `${nom
         .toLowerCase()
@@ -77,10 +63,9 @@ export async function POST(request) {
         fileName
       );
 
+      // Sauvegarder le fichier
       await writeFile(filePath, buffer);
       photoUrl = `/images/pokemon/${fileName}`;
-    } else {
-      photoUrl = "/images/pokemon/default.png";
     }
 
     const cookieHeader = request.headers.get("cookie");
@@ -118,7 +103,10 @@ export async function POST(request) {
 
     if (!userId) {
       return NextResponse.json(
-        { error: "Vous devez être connecté pour créer une demande" },
+        {
+          error:
+            "Vous devez être connecté pour créer une demande de modification",
+        },
         { status: 401 }
       );
     }
@@ -132,9 +120,10 @@ export async function POST(request) {
           description: description,
           generationId: generationId,
         },
-        actionType: "AJOUT",
+        actionType: "MODIFICATION",
         status: "EN_ATTENTE",
         authorId: userId,
+        pokemonId: pokemonId, // Lié au Pokémon existant
         types: {
           connect: parsedTypeIds.map((id) => ({ id: parseInt(id) })),
         },
@@ -148,19 +137,25 @@ export async function POST(request) {
             email: true,
           },
         },
+        pokemon: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
     return NextResponse.json(
       {
         message:
-          "Demande de création envoyée avec succès. Elle sera examinée par un administrateur.",
+          "Demande de modification envoyée avec succès. Elle sera examinée par un administrateur.",
         request: newRequest,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error("Erreur lors de la création du Pokémon:", error);
+    console.error("Erreur lors de la création de la demande:", error);
     return NextResponse.json(
       { error: "Erreur serveur lors de la création", details: error.message },
       { status: 500 }
