@@ -1,4 +1,3 @@
-
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
@@ -11,10 +10,18 @@ try {
     database: prismaAdapter(prisma, { provider: "postgresql" }),
     emailAndPassword: {
       enabled: true,
-      // Removed custom onSignUp handler, revert to default Better Auth behavior
+    },
+    user: {
+      additionalFields: {
+        role: {
+          type: "string",
+          required: false,
+          defaultValue: "USER",
+        },
+      },
     },
     plugins: [
-      nextCookies() // toujours laisser en dernier
+      nextCookies(), // toujours laisser en dernier
     ],
   });
 } catch (e) {

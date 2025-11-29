@@ -1,11 +1,12 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
 export default function PokemonPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [pokemon, setPokemon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -142,20 +143,42 @@ export default function PokemonPage() {
     description = pokemon.content;
   }
 
+  // Créer le dégradé basé sur les types du Pokémon
+  let backgroundGradient = "linear-gradient(to bottom, #f3f4f6, #e5e7eb)"; // fond par défaut
+
+  if (pokemon.types && pokemon.types.length > 0) {
+    const primaryColor = pokemon.types[0].color;
+
+    if (pokemon.types.length === 1) {
+      // Un seul type : dégradé continu de 70% à 30%
+      backgroundGradient = `linear-gradient(135deg, ${primaryColor}B3, ${primaryColor}4D)`;
+    } else {
+      // Deux types : dégradé du coin haut gauche vers bas droit
+      const secondaryColor = pokemon.types[1].color;
+      backgroundGradient = `linear-gradient(135deg, ${primaryColor}B3, ${secondaryColor}B3)`;
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-cover bg-center flex flex-col items-center py-8 px-2">
-      <div className="flex flex-col p-5 w-9/10 bg-white rounded-2xl gap-8">
+    <div
+      className="min-h-screen bg-cover bg-center flex flex-col items-center py-8 px-2"
+      style={{
+        background: backgroundGradient,
+      }}
+    >
+      <div className="flex flex-col p-5 w-9/10 bg-white rounded-2xl gap-8 border border-black">
         {/* Image à gauche */}
         <div className="flex flex-row w-full">
           <div className="flex-shrink-0 flex flex-col p-3 bg-[#D9D9D9] rounded-[24px] items-center justify-center w-1/2 md:w-1/3">
-            <Image
-              src={pokemon.photo}
-              alt={pokemon.name}
-              width={220}
-              height={220}
-              className="w-56 h-56 object-contain"
-              priority
-            />
+            <div className="relative w-56 h-56 overflow-hidden rounded-lg">
+              <Image
+                src={pokemon.photo}
+                alt={pokemon.name}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
           </div>
           {/* Bloc infos à droite */}
           <div className="flex-1 flex flex-col gap-2 p-3">
@@ -169,7 +192,7 @@ export default function PokemonPage() {
               <div className="py-2 border-b border-gray-200">
                 <span className="text-gray-500 text-sm">Génération:</span>
                 <span className="font-bold text-[24px] ml-2 align-middle">
-                  {pokemon.generation?.nom}
+                  {pokemon.generation?.name}
                 </span>
               </div>
               <div className="py-2 border-b border-gray-200">
@@ -221,31 +244,53 @@ export default function PokemonPage() {
                 Vérification...
               </div>
             ) : user ? (
-              <button
-                onClick={() => setShowCommentForm(!showCommentForm)}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold shadow transition"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5"
+              <>
+                <button
+                  onClick={() => setShowCommentForm(!showCommentForm)}
+                  className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold shadow transition"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 20.25c4.97 0 9-2.686 9-6V7.5c0-3.314-4.03-6-9-6s-9 2.686-9 6v6.75c0 3.314 4.03 6 9 6z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M8.25 10.5h7.5"
-                  />
-                </svg>
-                {showCommentForm ? "Annuler" : "Commenter"}
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 20.25c4.97 0 9-2.686 9-6V7.5c0-3.314-4.03-6-9-6s-9 2.686-9 6v6.75c0 3.314 4.03 6 9 6z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8.25 10.5h7.5"
+                    />
+                  </svg>
+                  {showCommentForm ? "Annuler" : "Commenter"}
+                </button>
+                <button
+                  onClick={() => router.push(`/pokemon/${id}/edit`)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-semibold shadow transition"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                    />
+                  </svg>
+                  Modifier
+                </button>
+              </>
             ) : (
               <a
                 href="/login"
@@ -268,30 +313,13 @@ export default function PokemonPage() {
                 Connectez-vous pour commenter
               </a>
             )}
-            <button className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-semibold shadow transition">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M16.862 4.487a2.25 2.25 0 1 1 3.182 3.182L7.5 20.25H3.75v-3.75L16.862 4.487z"
-                />
-              </svg>
-              Modifier
-            </button>
           </div>
         </div>
       </div>
 
       {/* Formulaire d'ajout de commentaire */}
       {showCommentForm && user && (
-        <div className="w-full max-w-4xl bg-white rounded-xl shadow p-6 mt-6">
+        <div className="w-9/10 bg-white rounded-xl shadow p-6 mt-6 border border-black">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
               <span className="text-white text-sm font-semibold">
@@ -335,7 +363,7 @@ export default function PokemonPage() {
       )}
 
       {/* Section Commentaires */}
-      <div className="w-full max-w-4xl mt-8">
+      <div className="w-9/10 mt-8">
         <h2 className="text-xl font-bold mb-6 text-gray-800">
           Commentaires ({pokemon.comments?.length || 0})
         </h2>
@@ -345,7 +373,7 @@ export default function PokemonPage() {
             {pokemon.comments.map((c) => (
               <div
                 key={c.id}
-                className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl shadow-sm p-6 border border-black hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -372,12 +400,12 @@ export default function PokemonPage() {
                     </div>
                   </div>
                 </div>
-                <div className="text-gray-700 leading-relaxed">{c.texte}</div>
+                <div className="text-gray-700 leading-relaxed">{c.text}</div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="bg-gray-50 rounded-xl p-8 text-center">
+          <div className="bg-gray-50 rounded-xl p-8 text-center border border-black">
             <div className="text-gray-400 text-lg mb-2">💬</div>
             <p className="text-gray-600">Aucun commentaire pour le moment.</p>
             <p className="text-gray-500 text-sm mt-1">

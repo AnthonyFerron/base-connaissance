@@ -15,7 +15,7 @@ export default function CardPokemon({ pokemon }) {
   return (
     // Wrapper qui simule la bordure
     <div
-      className="rounded-lg p-[4px] w-66"
+      className="rounded-lg p-[4px] w-60"
       style={{
         background:
           types.length > 1
@@ -25,8 +25,13 @@ export default function CardPokemon({ pokemon }) {
     >
       <Card className="text-center shadow-md w-64 rounded-lg overflow-hidden !bg-white">
         {/* Image */}
-        <div className="flex justify-center bg-gray-200 h-35 w-full">
-
+        <div className="relative flex justify-center bg-gray-200 h-28 w-full overflow-hidden">
+          <Image
+            src={pokemon.photo}
+            alt={pokemon.name}
+            fill
+            className="object-cover"
+          />
         </div>
 
         {/* Nom + id */}
@@ -42,32 +47,24 @@ export default function CardPokemon({ pokemon }) {
           </div>
 
         {/* Types */}
-        <div className="flex justify-center gap-2">
-          <div className="flex items-center gap-2 ">
-            {pokemon.types?.map((type) => (
-              <div
-                key={type.id}
-                className="flex items-center h-8 gap-2 px-3 py-2 rounded-lg shadow-sm "
-                style={{ backgroundColor: type.color }}
-              >
-                {type.image && (
-                  <Image
-                    src={type.image}
-                    alt={type.name}
-                    width={20}
-                    height={20}
-                    className="flex-shrink-0"
-                  />
-                )}
-                <span className="text-white font-semibold text-sm">
-                  {type.name}
-                </span>
-              </div>
-            ))}
-          </div>
+        <div className="flex justify-center gap-2 mt-2">
+          {types.map((t) => (
+            <span
+              key={t.id}
+              className="p-1 pt-0.5 h-6 rounded-3xl text-white text-xs font-medium"
+              style={{ backgroundColor: t.color }}
+            >
+              {t.image}
+              {t.name}
+            </span>
+          ))}
+          {/* Génération */}
 
+          <p className="text-sm text-gray-500 ">GEN</p>
+          <p className="text-sm text-gray-500 ">
+            {pokemon.generation.id}.{pokemon.generation.nom}
+          </p>
         </div>
-
       </Card>
     </div>
   );
