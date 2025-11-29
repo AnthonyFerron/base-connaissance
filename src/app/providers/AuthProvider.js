@@ -40,6 +40,37 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // ✅ Inscription
+  const signup = async ({email, password }) => {
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Erreur lors de l’inscription");
+    }
+
+    return await res.json();
+  };
+
+  // ✅ Connexion
+  const signin = async ({ email, password }) => {
+    const res = await fetch("/api/auth/signin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Erreur lors de la connexion");
+    }
+
+    await checkAuth(); // recharge l’utilisateur
+    return await res.json();
+  };
+
   // ✅ Update utilisateur (pseudo, suppression logique, etc.)
   const updateUser = async (data) => {
     try {
@@ -69,7 +100,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, updateUser, checkAuth }}>
+    <AuthContext.Provider value={{ user, loading, logout, signup, signin, updateUser, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );

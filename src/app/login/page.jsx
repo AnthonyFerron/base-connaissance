@@ -1,56 +1,47 @@
 "use client";
 import Image from "next/image";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { useAuth } from "@/app/providers/AuthProvider"; // ✅ utilise ton contexte
 
 export default function LoginPage() {
-  const [mode, setMode] = useState("login"); // 'signup' or 'login'
+  const [mode, setMode] = useState("login");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const router = useRouter();
 
+  const { user, signin, signup } = useAuth();
+
+  // ✅ Si déjà connecté → redirection
   useEffect(() => {
-    (async () => {
-      const session = await authClient.getSession();
-      if (session?.user) {
-        router.replace("/");
-      }
-    })();
-  }, [router]);
+    if (user) {
+      router.replace("/");
+    }
+  }, [user, router]);
 
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
     setSuccess("");
     setIsLoading(true);
+
     const f = new FormData(e.currentTarget);
     const email = String(f.get("email"));
     const password = String(f.get("password"));
+
     try {
       if (mode === "signup") {
-        const { data, error } = await authClient.signUp.email({
-          name: email.split("@")[0], // ou demander un champ prénom/pseudo
+        await signup({
+          name: email.split("@")[0],
           email,
           password,
         });
-        if (error)
-          throw new Error(
-            error.message || "Erreur lors de la création du compte"
-          );
-        setSuccess(
-          "Compte créé avec succès ! Vous pouvez maintenant vous connecter."
-        );
+
+        setSuccess("Compte créé avec succès ! Vous pouvez maintenant vous connecter.");
         setMode("login");
       } else {
-        const { data, error } = await authClient.signIn.email({
-          email,
-          password,
-        });
-        if (error)
-          throw new Error(error.message || "Erreur lors de la connexion");
+        await signin({ email, password });
         router.push("/");
       }
     } catch (err) {
@@ -75,6 +66,7 @@ export default function LoginPage() {
           />
           <span className="text-5xl font-bold ml-[-50px]">okéDoc</span>
         </div>
+
         <form className="w-full flex flex-col gap-4" onSubmit={onSubmit}>
           <div>
             <label htmlFor="email" className="block text-gray-700 text-sm mb-1">
@@ -91,6 +83,7 @@ export default function LoginPage() {
               disabled={isLoading}
             />
           </div>
+
           <div>
             <label
               htmlFor="password"
@@ -105,12 +98,11 @@ export default function LoginPage() {
               placeholder="Mot de passe"
               className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#EC533A] text-base"
               required
-              autoComplete={
-                mode === "login" ? "current-password" : "new-password"
-              }
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
               disabled={isLoading}
             />
           </div>
+
           <button
             type="submit"
             className="w-full mt-2 bg-[#EC533A] hover:bg-[#d94a32] text-white font-semibold py-2 rounded-lg transition-colors text-lg shadow-sm border border-[#EC533A]"
@@ -125,12 +117,10 @@ export default function LoginPage() {
               : "Se connecter"}
           </button>
         </form>
-        {error && (
-          <p className="text-red-500 text-center mt-2 text-sm">{error}</p>
-        )}
-        {success && (
-          <p className="text-green-600 text-center mt-2 text-sm">{success}</p>
-        )}
+
+        {error && <p className="text-red-500 text-center mt-2 text-sm">{error}</p>}
+        {success && <p className="text-green-600 text-center mt-2 text-sm">{success}</p>}
+
         {mode === "signup" ? (
           <button
             type="button"

@@ -1,12 +1,17 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
+//Exposer /api/auth/update pour mettre à jour les infos de l’utilisateur (nom, email, rôle).
+//Utilisé par updateUser() dans le AuthProvider.
+
 export const dynamic = "force-dynamic";
 
 // POST /api/auth/update
 export async function POST(req) {
   try {
-    const session = await auth.api.getSession({ req });
+    const session = await auth.api.getSession({
+      headers: Object.fromEntries(req.headers),
+    });
 
     if (!session?.user) {
       return NextResponse.json(
@@ -18,7 +23,7 @@ export async function POST(req) {
     const body = await req.json();
 
     //On ne prend que les champs qu'on autorise
-    const allowedFields = ["name", "email", "role"];
+    const allowedFields = ["name", "email"];
     const updateData = {};
 
     for (const field of allowedFields) {

@@ -17,18 +17,18 @@ import Image from "next/image";
 import { SidebarContext } from "../layout";
 
 export default function MyNavbar() {
-  
+
   const { showSidebar, setShowSidebar } = useContext(SidebarContext);
   const [generations, setGenerations] = useState([]);
   const [types, setTypes] = useState([]);
   const pathname = usePathname();
   const router = useRouter();
-
   const { filters, setFilters, search, setSearch } = useFilters();
   const { user, logout, updateUser } = useAuth();
   const openSidebar = () => setShowSidebar(true);
   const closeSidebar = () => setShowSidebar(false);
-  
+  const [pseudo, setPseudo] = useState(user?.name || "");
+
 
   // ✅ Déconnexion
   const handleLogout = async () => {
@@ -40,11 +40,17 @@ export default function MyNavbar() {
     }
   };
 
-  // ✅ Mise à jour du pseudo
-  const handlePseudoUpdate = async (e) => {
+
+  // 🔄 Synchroniser quand user change (connexion/déconnexion)
+  useEffect(() => {
+    setPseudo(user?.name || "");
+  }, [user]);
+
+  // ✅ Sauvegarde pseudo uniquement au clic
+  const savePseudo = async () => {
     try {
-      const newPseudo = e.target.value;
-      await updateUser({ name: newPseudo });
+      if (!pseudo || pseudo === user?.name) return; // rien à faire
+      await updateUser({ name: pseudo });
     } catch (error) {
       console.error("Erreur update pseudo:", error);
     }
@@ -57,7 +63,9 @@ export default function MyNavbar() {
         name: "deletedUser",
         email: "deleted@pokeme.com",
         role: "deleted",
-      });
+      },
+        handleLogout()
+      );
     } catch (error) {
       console.error("Erreur suppression compte:", error);
     }
@@ -96,6 +104,15 @@ export default function MyNavbar() {
     }
   };
 
+  // ✅ Reset des filtres
+  const resetFilters = () => {
+    setFilters({
+      generation: null,
+      types: [],
+    });
+    setSearch("");
+  };
+
   if (pathname === "/login") {
     return null;
   }
@@ -108,7 +125,7 @@ export default function MyNavbar() {
         <div className="flex items-center gap-6">
           {pathname === "/" ? (
             <Button
-               onClick={openSidebar}
+              onClick={openSidebar}
               className="bg-[#EC533A] hover:bg-orange-700 h-8 text-white rounded-lg px-2 py-1 border border-black"
             >
               Filtres
@@ -172,16 +189,23 @@ export default function MyNavbar() {
                   <span className="block text-sm text-gray-500">Pseudo </span>
                   <Pen className="size-4 text-[#EC533A]" />
                 </div>
-                <input
-                  type="text"
-                  value={user?.name || ""}
-                  onChange={handlePseudoUpdate}
-                  placeholder="Choisir un pseudo..."
-                  className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm font-semibold focus:ring-2 focus:ring-[#EC533A]"
-                />
-                <span className="block text-sm text-gray-500 mt-2">
-                  Adresse e-mail
-                </span>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={pseudo}
+                    onChange={(e) => setPseudo(e.target.value)} // écriture locale
+                    placeholder="Choisir un pseudo..."
+                    className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm font-semibold focus:ring-2 focus:ring-[#EC533A]"
+                  />
+                  <button
+                    onClick={savePseudo}
+                    className="bg-[#EC533A] hover:bg-orange-700 text-white px-3 rounded-md text-sm"
+                  >
+                    Sauvegarder
+                  </button>
+                </div>
+
+                <span className="block text-sm text-gray-500 mt-2">Adresse e-mail</span>
                 <span className="block text-sm font-semibold truncate">
                   {user?.email || ""}
                 </span>
@@ -209,15 +233,20 @@ export default function MyNavbar() {
 
       {/* SIDEBAR FILTRES */}
       <div
-        className={`fixed top-[84px] left-0 h-[calc(100%-64px)]  w-64 bg-white border-r border-black shadow-lg transform transition-transform duration-300 z-50 ${
-          showSidebar ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-[84px] left-0 h-[calc(100%-64px)]  w-64 bg-white border-r border-black shadow-lg transform transition-transform duration-300 z-50 ${showSidebar ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex justify-between items-center p-1 border-b">
           <h2 className="text-lg font-semibold">Filtres</h2>
-          <button onClick={closeSidebar}>
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex justify-end gap-2">
+            <button onClick={resetFilters} className="p-1 bg-red-200 rounded-lg border">
+              Reset
+            </button>
+            <button onClick={closeSidebar}>
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
         </div>
 
         <div className="p-4 overflow-y-auto h-full">
@@ -236,8 +265,8 @@ export default function MyNavbar() {
                   }
                 />
                 <div className="flex flex-col ">
-                <p className="flex text-sm font-medium">Génération {g.id}</p>
-                <p className="flex text-sm font-medium text-gray-400">{g.nom}</p>
+                  <p className="flex text-sm font-medium">Génération {g.id}</p>
+                  <p className="flex text-sm font-medium text-gray-400">{g.nom}</p>
                 </div>
               </label>
             ))}

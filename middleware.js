@@ -13,7 +13,7 @@ export async function middleware(req) {
 
   // 🔒 Si pas connecté et page non publique → redirection signup
   if (!session?.user && !isPublic) {
-    const signupUrl = new URL("/signup", req.url);
+    const signupUrl = new URL("/login", req.url);
     return NextResponse.redirect(signupUrl);
   }
 
