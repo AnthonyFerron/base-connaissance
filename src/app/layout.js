@@ -4,7 +4,7 @@ import MyNavbar from "./components/NavBar";
 import Footer from "./components/Footer";
 import "./globals.css";
 import { FiltersProvider } from "./providers/FiltersProvider";
-// import { AuthProvider } from "./providers/AuthProvider";
+import { AuthProvider } from "./providers/AuthProvider";
 import { createContext, useState } from "react";
 
 export const SidebarContext = createContext();
@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr">
       <body className="flex flex-col min-h-screen">
-        {/* <AuthProvider> */}
+         <AuthProvider>
         <FiltersProvider>
           <SidebarContext.Provider value={{ showSidebar, setShowSidebar }}>
             <MyNavbar />
@@ -29,7 +29,7 @@ export default function RootLayout({ children }) {
           </SidebarContext.Provider>
         </FiltersProvider>
         <Footer />
-        {/* </AuthProvider> */}
+        </AuthProvider>
       </body>
     </html>
   );

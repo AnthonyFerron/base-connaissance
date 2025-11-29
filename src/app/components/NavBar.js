@@ -11,10 +11,11 @@ import {
 } from "flowbite-react";
 import { ChevronLeft, CirclePlus, Pen, Search, X, Shield } from "lucide-react";
 import { redirect, usePathname, useRouter } from "next/navigation";
-import { useFilters } from "../providers/FiltersProvider";
+import { useFilters } from "@/app/providers/FiltersProvider";
 import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
-import { SidebarContext } from "../layout";
+import { SidebarContext } from "@/app/layout";
+import { useAuth } from "@/app/providers/AuthProvider";
 
 export default function MyNavbar() {
   const { showSidebar, setShowSidebar } = useContext(SidebarContext);
@@ -27,6 +28,7 @@ export default function MyNavbar() {
   const openSidebar = () => setShowSidebar(true);
   const closeSidebar = () => setShowSidebar(false);
   const [pseudo, setPseudo] = useState(user?.name || "");
+  const { updateUser } = useAuth();
 
 
   // Charger l'utilisateur
