@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { toNextJsHandler } from "better-auth/next-js";
 import { NextResponse } from "next/server";
-import { authClient } from "@/lib/auth-client";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +19,7 @@ async function handleSignup(request) {
       );
     }
 
-    const { user, error } = await authClient.signUp.email({
+    const { user, error } = await auth.api.signUpEmail({
       email,
       password,
     });
@@ -52,9 +51,11 @@ async function handleSignin(request) {
       );
     }
 
-    const { user, error } = await authClient.signIn.email({
-      email,
-      password,
+    const { user, error } = await auth.api.signInEmail({
+      body: {
+        email,
+        password,
+      },
     });
 
     if (error) {

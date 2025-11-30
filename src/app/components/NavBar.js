@@ -10,7 +10,7 @@ import {
   Checkbox,
 } from "flowbite-react";
 import { ChevronLeft, CirclePlus, Pen, Search, X, Shield } from "lucide-react";
-import { redirect, usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useFilters } from "@/app/providers/FiltersProvider";
 import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
@@ -25,6 +25,7 @@ export default function MyNavbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { filters, setFilters, search, setSearch } = useFilters();
+
   const openSidebar = () => setShowSidebar(true);
   const closeSidebar = () => setShowSidebar(false);
   const [pseudo, setPseudo] = useState(user?.name || "");
@@ -211,71 +212,87 @@ export default function MyNavbar() {
           />
 
           {/* Profil */}
-          <div className="flex items-center gap-4 h-8 bg-[#EC533A] p-4 text-white rounded-md border border-black ">
-            <Dropdown
-              label="Mon Profil"
-              inline
-              className="rounded-md shadow-md text-black border border-black"
-            >
-              <div className="px-3 py-2">
-                <div className="flex flex-row gap-1 mb-1 items-center">
-                  <span className="block text-sm text-gray-500">Pseudo </span>
-                  <Pen className="size-4 text-[#EC533A]" />
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={pseudo}
-                    onChange={(e) => setPseudo(e.target.value)} // écriture locale
-                    placeholder="Choisir un pseudo..."
-                    className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm font-semibold focus:ring-2 focus:ring-[#EC533A]"
-                  />
-                  <button
-                    onClick={savePseudo}
-                    className="bg-[#EC533A] hover:bg-orange-700 text-white px-3 rounded-md text-sm"
-                  >
-                    Sauvegarder
-                  </button>
+          {user ? (
+            <div className="flex items-center gap-4 h-8 bg-[#EC533A] p-4 text-white rounded-md border border-black ">
+              <Dropdown
+                label="Mon Profil"
+                inline
+                className="rounded-md shadow-md text-black border border-black"
+              >
+                <div className="px-3 py-2">
+                  <div className="flex flex-row gap-1 mb-1 items-center">
+                    <span className="block text-sm text-gray-500">Pseudo </span>
+                    <Pen className="size-4 text-[#EC533A]" />
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={pseudo}
+                      onChange={(e) => setPseudo(e.target.value)}
+                      placeholder="Choisir un pseudo..."
+                      className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm font-semibold focus:ring-2 focus:ring-[#EC533A]"
+                    />
+                    <button
+                      onClick={savePseudo}
+                      className="bg-[#EC533A] hover:bg-orange-700 text-white px-3 rounded-md text-sm"
+                    >
+                      Sauvegarder
+                    </button>
+                  </div>
+
+                  <span className="block text-sm text-gray-500 mt-2">Adresse e-mail</span>
+                  <span className="block text-sm font-semibold truncate">
+                    {user?.email}
+                  </span>
                 </div>
 
-                <span className="block text-sm text-gray-500 mt-2">Adresse e-mail</span>
-                <span className="block text-sm font-semibold truncate">
-                  {/* {user?.email || ""} */}
-                </span>
-              </div>
-              <DropdownDivider />
-              {user?.role === "ADMIN" && (
-                <>
-                  <DropdownItem onClick={() => router.push("/admin")}>
-                    <Shield className="mr-2 h-4 w-4" />
-                    Administration
-                  </DropdownItem>
-                  <DropdownDivider />
-                </>
-              )}
-              <DropdownItem>
-                <Button
-                  onClick={handleLogout}
-                  className="w-full h-6 bg-[#EC533A] hover:bg-orange-700 text-white border border-black"
+                <DropdownDivider />
+
+                {user?.role === "ADMIN" && (
+                  <>
+                    <DropdownItem onClick={() => router.push("/admin")}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      Administration
+                    </DropdownItem>
+                    <DropdownDivider />
+                  </>
+                )}
+
+                <DropdownItem>
+                  <Button
+                    onClick={handleLogout}
+                    className="w-full h-6 bg-[#EC533A] hover:bg-orange-700 text-white border border-black"
+                  >
+                    Déconnexion
+                  </Button>
+                </DropdownItem>
+
+                <DropdownDivider />
+
+                <DropdownItem
+                  onClick={handleDeleteAccount}
+                  className="text-red-600 hover:bg-red-50"
                 >
-                  Déconnexion
-                </Button>
-              </DropdownItem>
-              <DropdownDivider />
-              <DropdownItem
-                onClick={handleDeleteAccount}
-                className="text-red-600 hover:bg-red-50"
-              >
-                Supprimer ce compte
-              </DropdownItem>
-            </Dropdown>
-          </div>
+                  Supprimer ce compte
+                </DropdownItem>
+              </Dropdown>
+            </div>
+          ) : (
+            /* Si PAS connecté : bouton "Se connecter" */
+            <Button
+              onClick={() => router.push("/login")}
+              className="bg-[#EC533A] hover:bg-orange-700 text-white rounded-md px-4 py-2 border border-black"
+            >
+              Se Connecter
+            </Button>
+          )}
+
         </div>
       </Navbar>
 
       {/* SIDEBAR FILTRES */}
       <div
-        className={`fixed top-[84px] left-0 h-[calc(100%-64px)]  w-64 bg-white border-r border-black shadow-lg transform transition-transform duration-300 z-50 ${showSidebar ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-[84px] left-0 h-[calc(100%-84px)] w-64 bg-white border-r border-black shadow-lg transform transition-transform duration-300 z-50 ${showSidebar ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         <div className="flex justify-between items-center p-1 border-b">
@@ -291,7 +308,7 @@ export default function MyNavbar() {
 
         </div>
 
-        <div className="p-4 overflow-y-auto h-full">
+        <div className="p-4 overflow-y-auto h-full pb-6">
           <h3 className="text-sm font-semibold mb-3">Générations</h3>
           <div className="flex flex-col gap-3 ">
             {generations.map((g) => (
