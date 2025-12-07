@@ -604,6 +604,88 @@ async function main() {
 
   console.log("Commentaires créés: 2");
 
+  //Creer questions quiz
+    const questionsData = [
+    {
+      question: "Quel est le type principal de Pikachu ?",
+      image: "/images/quiz/pikachu.png",
+      correct: "Électrik",
+      choices: ["Électrik", "Feu", "Plante", "Normal"],
+    },
+    {
+      question: "Quel Pokémon est le starter eau de Kanto ?",
+      image: "/images/quiz/carapuce.png",
+      correct: "Carapuce",
+      choices: ["Carapuce", "Piplup", "Moustillon", "Gobou"],
+    },
+    {
+      question: "Quel Pokémon est connu comme le Pokémon génétique ?",
+      image: "/images/quiz/mewtwo.png",
+      correct: "Mewtwo",
+      choices: ["Mew", "Mewtwo", "Deoxys", "Genesect"],
+    },
+        {
+        question: "Quel type est super efficace contre les Pokémon Feu ?",
+        image: null,
+        choices: ["Eau", "Électrik", "Fée", "Normal"],
+        correct: "Eau",
+      },
+      {
+        question: "Lequel de ces Pokémon peut évoluer avec une pierre feu ?",
+        image: "/images/quiz/evoli.png",
+        choices: ["Evoli", "Pikachu", "Tarsal", "Caninos"],
+        correct: "Caninos",
+      },
+      {
+        question: "Quel Pokémon est le numéro 1 du Pokédex national ?",
+        image: "/images/quiz/bulbizarre.png",
+        choices: ["Bulbizarre", "Pikachu", "Mew", "Arceus"],
+        correct: "Bulbizarre",
+      },
+      {
+        question: "Quel type est immunisé contre les attaques Électrik ?",
+        image: null,
+        choices: ["Sol", "Eau", "Acier", "Normal"],
+        correct: "Sol",
+      },
+      {
+        question: "Quel Pokémon est la mascotte officielle de Pokémon ?",
+        image: "/images/quiz/pikachu2.png",
+        choices: ["Pikachu", "Sacha", "Ronflex", "Dracaufeu"],
+        correct: "Pikachu",
+      },
+      {
+        question: "Quelle région est introduite dans Pokémon Or & Argent ?",
+        image: null,
+        choices: ["Kanto", "Kalos", "Johto", "Galar"],
+        correct: "Johto",
+      },
+      {
+        question: "Combien de formes différentes peut prendre Evoli via évolution ?",
+        image: "/images/quiz/evolutions_evoli.png",
+        choices: ["5", "7", "8", "9"],
+        correct: "8",
+      },
+  ];
+
+  for (const q of questionsData) {
+    await prisma.quizQuestion.create({ 
+      data: { 
+        question: q.question,
+        image: q.image,
+        difficulty: q.difficulty ?? "medium",
+        answers: {
+          create: q.choices.map(c => ({
+            text: c,
+            isCorrect: c === q.correct
+          }))
+        }
+      }
+    });
+  }
+
+  console.log("Questions de quiz créées: 10");
+
   // Créer une requête d'ajout pour le Pokémon Gobu
   await prisma.request.create({
     data: {
@@ -629,6 +711,7 @@ async function main() {
 
   console.log("Requête d'ajout créée: 1");
   console.log("Seeding terminé avec succès !");
+
 }
 
 main()

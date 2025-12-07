@@ -154,3 +154,21 @@ model Account {
 
   @@map("account")
 }
+
+model QuizQuestion {
+  id        Int            @id @default(autoincrement())
+  question  String
+  image     String?       
+  difficulty String?      
+
+  answers   QuizAnswer[]
+}
+
+model QuizAnswer {
+  id          Int           @id @default(autoincrement())
+  text        String
+  isCorrect   Boolean       @default(false)
+
+  questionId  Int
+  question    QuizQuestion  @relation(fields: [questionId], references: [id])
+}

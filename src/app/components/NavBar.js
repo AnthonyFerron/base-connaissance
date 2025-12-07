@@ -13,6 +13,7 @@ import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
 import { SidebarContext } from "@/app/layout";
 import { useAuth } from "@/app/providers/AuthProvider";
+import { Link } from "next/link";
 
 export default function MyNavbar() {
   const { showSidebar, setShowSidebar } = useContext(SidebarContext);
@@ -265,8 +266,16 @@ export default function MyNavbar() {
             )}
           </div>
         )}
-
+        {pathname !== "/" && (
+          <button
+            onClick={() => router.push("/quiz")}
+            className="bg-[#EC533A] hover:bg-orange-700 text-white rounded-md px-4 py-2 border border-black"
+          >
+            Quiz
+          </button>
+        )}
         <div className="flex flex-row gap-10 items-center">
+
           <Image
             src="/images/logo.png"
             alt="PokéDoc logo"
@@ -274,8 +283,8 @@ export default function MyNavbar() {
             height={40}
             draggable="false"
             priority
+            onClick={() => router.push("/")}
           />
-
           {/* Profil */}
           {user ? (
             <div className="relative">

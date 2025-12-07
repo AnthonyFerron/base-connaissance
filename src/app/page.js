@@ -6,6 +6,7 @@ import { useFilters } from "./providers/FiltersProvider";
 import CardPokemon from "./components/CardPokemon";
 import Image from "next/image";
 import { Search } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   const { filters, setFilters } = useFilters();
@@ -139,6 +140,16 @@ export default function Home() {
         </div>
       </section>
 
+              <div className="max-w-md mx-auto my-8">
+        <Link href="/quiz">
+          <div className="bg-[#EC533A] text-white p-6 rounded-xl shadow-lg 
+                          hover:bg-orange-700 cursor-pointer transition transform hover:scale-105">
+            <h2 className="text-2xl font-bold mb-2">🎮 Quiz Pokémon</h2>
+            <p>Teste tes connaissances avec un quiz aléatoire !</p>
+          </div>
+        </Link>
+      </div>
+
       {/* LISTE */}
       <div className="px-4 sm:px-10 bg-gray-200 flex justify-center">
         <section className="py-10 w-full max-w-7xl">
@@ -157,7 +168,13 @@ export default function Home() {
               gap-6 sm:gap-10
             ">
               {filteredPokemons.map((p) => (
-                <CardPokemon key={p.id} pokemon={p} />
+                <Link
+                  key={p.id}
+                  href={`/pokemon/${p.id}`}
+                  className="block hover:scale-105 transition-transform"
+                >
+                  <CardPokemon pokemon={p} />
+                </Link>
               ))}
             </div>
           )}
