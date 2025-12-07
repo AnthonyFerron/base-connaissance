@@ -202,7 +202,7 @@ export default function MyNavbar() {
         </div>
 
         {/* Droite : Barre de recherche (sauf sur accueil) */}
-        {pathname !== "/login" && (
+        {pathname !== "/" && (
           <div className="relative w-full max-w-md">
             <div
               className="flex items-center bg-gray-100 rounded-full px-3 py-1 border border-gray-300"
@@ -354,7 +354,17 @@ export default function MyNavbar() {
 
       {/* SIDEBAR FILTRES */}
       <div
-        className={`fixed top-[84px] left-0 h-[calc(100%-84px)] w-64 bg-white border-r border-black shadow-lg transform transition-transform duration-300 z-50 ${showSidebar ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-[84px] 
+          pb-30
+          left-0 
+          h-full
+           w-64 bg-white 
+           border-r
+            border-black 
+            shadow-lg 
+            transform transition-transform 
+            duration-300 
+            ${showSidebar ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         <div className="flex justify-between items-center p-1 border-b">
@@ -370,7 +380,7 @@ export default function MyNavbar() {
 
         </div>
 
-        <div className="p-4 overflow-y-auto h-full pb-6">
+        <div className="p-4 overflow-y-auto max-h-full pb-6">
           <h3 className="text-sm font-semibold mb-3">Générations</h3>
           <div className="flex flex-col gap-3 ">
             {generations.map((g) => (
