@@ -4,9 +4,6 @@ import { useEffect, useState, useContext } from "react";
 import {
   Button,
   Navbar,
-  Dropdown,
-  DropdownItem,
-  DropdownDivider,
   Checkbox,
 } from "flowbite-react";
 import { ChevronLeft, CirclePlus, Pen, Search, X, Shield } from "lucide-react";
@@ -21,28 +18,26 @@ export default function MyNavbar() {
   const { showSidebar, setShowSidebar } = useContext(SidebarContext);
   const [generations, setGenerations] = useState([]);
   const [types, setTypes] = useState([]);
-  const [user, setUser] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
-  const { filters, setFilters, search, setSearch } = useFilters();
+  const { filters, setFilters } = useFilters();
+  const [openProfile, setOpenProfile] = useState(false);
 
   const openSidebar = () => setShowSidebar(true);
   const closeSidebar = () => setShowSidebar(false);
+  const { updateUser, user } = useAuth();
   const [pseudo, setPseudo] = useState(user?.name || "");
-  const { updateUser } = useAuth();
+  const [allPokemons, setAllPokemons] = useState([]);
+  const [showResults, setShowResults] = useState(false);
 
 
-  // Charger l'utilisateur
-  useEffect(() => {
-    const loadUser = async () => {
-      const session = await authClient.getSession();
-      if (session?.user) {
-        setUser(session.user);
-      }
-    };
-    loadUser();
-  }, []);
-
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (!filters.search) return;
+    if (pathname !== '/') {
+      router.push('/'); // La Home lira filters.search
+    }
+  };
   // ✅ Déconnexion
   const handleLogout = async () => {
     try {
@@ -72,8 +67,9 @@ export default function MyNavbar() {
   // ✅ Sauvegarde pseudo uniquement au clic
   const savePseudo = async () => {
     try {
-      if (!pseudo || pseudo === user?.name) return; // rien à faire
+      if (!pseudo || pseudo === user?.name) return;
       await updateUser({ name: pseudo });
+      setOpenProfile(false);
     } catch (error) {
       console.error("Erreur update pseudo:", error);
     }
@@ -112,6 +108,19 @@ export default function MyNavbar() {
     loadData();
   }, []);
 
+  useEffect(() => {
+    async function loadNavPokemons() {
+      try {
+        const res = await fetch("/api/pokemon");
+        const data = await res.json();
+        setAllPokemons(data);
+      } catch (err) {
+        console.error("Erreur fetch pokemons navbar:", err);
+      }
+    }
+    loadNavPokemons();
+  }, []);
+
   // ✅ Gestion toggle type
   const toggleType = (type) => {
     if (filters.types.includes(type)) {
@@ -148,6 +157,14 @@ export default function MyNavbar() {
     router.back();
   };
 
+  const filteredResults = allPokemons
+    .filter((p) =>
+      p.name?.toLowerCase().includes(filters.search.toLowerCase())
+    )
+    .slice(0, 6);
+
+
+
   return (
     <>
       {/* NAVBAR */}
@@ -171,33 +188,81 @@ export default function MyNavbar() {
           )}
 
           {/* Bouton Créer */}
-          <div className="flex flex-col items-center">
-            <Button
-              onClick={handleCreate}
-              className="bg-[#EC533A] hover:bg-orange-700 rounded-full p-0.5"
-            >
-              <CirclePlus className="h-9 w-9 text-white" />
-            </Button>
-            <span className="text-sm mt-1">Créer</span>
-          </div>
+          {user && (
+            <div className="flex flex-col items-center">
+              <Button
+                onClick={handleCreate}
+                className="bg-[#EC533A] hover:bg-orange-700 rounded-full p-0.5"
+              >
+                <CirclePlus className="h-9 w-9 text-white" />
+              </Button>
+              <span className="text-sm mt-1">Créer</span>
+            </div>
+          )}
         </div>
 
         {/* Droite : Barre de recherche (sauf sur accueil) */}
-        {pathname !== "/" && (
-          <div className="flex items-center rounded-full border w-80 h-10 justify-between">
-            <input
-              type="text"
-              placeholder="Rechercher ..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex justify-start border-0 h-full rounded-full px-3 text-sm"
-            />
-            <Button
-              type="submit"
-              className="flex justify-end rounded-full p-1 px-3 text-gray-600 hover:bg-gray-200 focus:ring-0"
+        {pathname !== "/login" && (
+          <div className="relative w-full max-w-md">
+            <div
+              className="flex items-center bg-gray-100 rounded-full px-3 py-1 border border-gray-300"
             >
-              <Search className="h-4 w-4" />
-            </Button>
+              <Search className="w-5 h-5 text-gray-500" />
+
+              <input
+                type="text"
+                placeholder="Rechercher un Pokémon..."
+                value={filters.search}
+                onChange={(e) => {
+                  setFilters({ ...filters, search: e.target.value });
+                  setShowResults(true);
+                }}
+                onFocus={() => setShowResults(true)}
+                className="ml-2 bg-transparent focus:outline-none border-0 focus:ring-0 text-sm flex-1"
+              />
+
+              {filters.search.length > 0 && (
+                <button
+                  onClick={() => {
+                    setFilters({ ...filters, search: "" });
+                    setShowResults(false);
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* 🔽 Résultats de la recherche */}
+            {showResults && filters.search.length > 0 && filteredResults.length > 0 && (
+              <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg mt-2 shadow-xl z-50 max-h-64 overflow-y-auto">
+                {filteredResults.map((p) => (
+                  <div
+                    key={p.id}
+                    onClick={() => {
+                      setShowResults(false);
+                      router.push(`/pokemon/${p.id}`);
+                    }}
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    <Image
+                      src={p.photo}
+                      alt={p.name}
+                      width={40}
+                      height={40}
+                      objectFit="fill"
+                    />
+                    <span className="font-medium">{p.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {showResults && filters.search.length > 0 && filteredResults.length === 0 && (
+              <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg mt-2 shadow-xl z-50 p-3 text-center text-gray-500">
+                Aucun résultat
+              </div>
+            )}
           </div>
         )}
 
@@ -213,69 +278,66 @@ export default function MyNavbar() {
 
           {/* Profil */}
           {user ? (
-            <div className="flex items-center gap-4 h-8 bg-[#EC533A] p-4 text-white rounded-md border border-black ">
-              <Dropdown
-                label="Mon Profil"
-                inline
-                className="rounded-md shadow-md text-black border border-black"
+            <div className="relative">
+              <button
+                onClick={() => setOpenProfile(!openProfile)}
+                className="bg-[#EC533A] text-white px-4 py-2 rounded-md border border-black"
               >
-                <div className="px-3 py-2">
-                  <div className="flex flex-row gap-1 mb-1 items-center">
-                    <span className="block text-sm text-gray-500">Pseudo </span>
-                    <Pen className="size-4 text-[#EC533A]" />
-                  </div>
-                  <div className="flex gap-2">
+                Mon Profil
+              </button>
+
+              {openProfile && (
+                <div
+                  className="absolute right-0 mt-2 w-64 bg-white shadow-md border border-black rounded-md p-3 z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="mb-2">
+                    <span className="text-sm text-gray-500">Pseudo</span>
                     <input
                       type="text"
                       value={pseudo}
                       onChange={(e) => setPseudo(e.target.value)}
-                      placeholder="Choisir un pseudo..."
-                      className="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm font-semibold focus:ring-2 focus:ring-[#EC533A]"
+                      className="w-full border rounded-md px-2 py-1 mt-1 text-sm"
                     />
                     <button
                       onClick={savePseudo}
-                      className="bg-[#EC533A] hover:bg-orange-700 text-white px-3 rounded-md text-sm"
+                      className="mt-2 w-full bg-[#EC533A] text-white rounded-md py-1 hover:bg-gray-500"
                     >
                       Sauvegarder
                     </button>
                   </div>
 
-                  <span className="block text-sm text-gray-500 mt-2">Adresse e-mail</span>
-                  <span className="block text-sm font-semibold truncate">
-                    {user?.email}
-                  </span>
-                </div>
+                  <hr className="my-2" />
 
-                <DropdownDivider />
+                  <span className="text-sm text-gray-500">Email</span>
+                  <p className="text-sm font-semibold">{user?.email}</p>
 
-                {user?.role === "ADMIN" && (
-                  <>
-                    <DropdownItem onClick={() => router.push("/admin")}>
-                      <Shield className="mr-2 h-4 w-4" />
+                  <hr className="my-2" />
+
+                  {user.role === "ADMIN" && (
+                    <button
+                      onClick={() => router.push("/admin")}
+                      className="w-full text-left py-1 hover:bg-gray-100 "
+                    >
                       Administration
-                    </DropdownItem>
-                    <DropdownDivider />
-                  </>
-                )}
+                    </button>
+                  )}
 
-                <DropdownItem>
-                  <Button
+                  <button
                     onClick={handleLogout}
-                    className="w-full h-6 bg-[#EC533A] hover:bg-orange-700 text-white border border-black"
+                    className="w-full mt-2 bg-[#EC533A] text-white rounded-md py-1 hover:bg-gray-500"
                   >
                     Déconnexion
-                  </Button>
-                </DropdownItem>
+                  </button>
 
-                <DropdownDivider />
-
-                <DropdownItem
-                  onClick={handleDeleteAccount}
-                  className="text-red-600 hover:bg-red-50"
-                >
-                  Supprimer ce compte
-                </DropdownItem>
-              </Dropdown>
+                  <button
+                    onClick={handleDeleteAccount}
+                    className="w-full mt-2 p-1 text-red-600 text-left rounded-lg hover:bg-gray-300"
+                  >
+                    Supprimer ce compte
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             /* Si PAS connecté : bouton "Se connecter" */

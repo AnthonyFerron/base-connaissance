@@ -41,8 +41,8 @@ export async function POST(req) {
 
     // ✅ Mettre à jour dans la DB via better-auth
     const updatedUser = await auth.api.updateUser({
-      where: { id: session.user.id },
-      data: updateData,
+      headers: Object.fromEntries(req.headers),
+      body: updateData,
     });
 
     return NextResponse.json(

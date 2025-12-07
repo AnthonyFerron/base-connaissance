@@ -31,14 +31,14 @@ export function AuthProvider({ children }) {
   };
 
   // ✅ Déconnexion
-  const logout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      setUser(null);
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+ const logout = async () => {
+  try {
+    await fetch("/api/auth/logout", { method: "POST" });
+    await checkAuth();  
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+};
 
   // ✅ Inscription
   const signup = async ({email, password }) => {
@@ -73,31 +73,23 @@ export function AuthProvider({ children }) {
 
   // ✅ Update utilisateur (pseudo, suppression logique, etc.)
   const updateUser = async (data) => {
-    try {
-      const response = await fetch("/api/auth/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+  try {
+    const response = await fetch("/api/auth/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to update user");
-      }
+    if (!response.ok) throw new Error("Failed to update user");
 
-      const result = await response.json();
+    await checkAuth(); 
 
-      if (result.user) {
-        setUser(result.user); // met à jour direct le contexte
-      } else {
-        await checkAuth(); // fallback si pas de retour user
-      }
-
-      return result;
-    } catch (error) {
-      console.error("Error updating user:", error);
-      throw error;
-    }
-  };
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error;
+  }
+};
 
   return (
     <AuthContext.Provider value={{ user, loading, logout, signup, signin, updateUser, checkAuth }}>

@@ -5,12 +5,11 @@ import { usePathname } from "next/navigation";
 import { useFilters } from "./providers/FiltersProvider";
 import CardPokemon from "./components/CardPokemon";
 import Image from "next/image";
-import { Button } from "flowbite-react";
 import { Search } from "lucide-react";
 
-
 export default function Home() {
-  const { filters, setFilters, search } = useFilters();
+  const { filters, setFilters } = useFilters();
+  const search = filters.search;
   const [pokemons, setPokemons] = useState([]);
   const pathname = usePathname();
 
@@ -23,14 +22,14 @@ export default function Home() {
     loadPokemons();
   }, []);
 
-  // Reset des filtres si on quitte la page d’accueil
+  // Reset filters when leaving home
   useEffect(() => {
     if (pathname !== "/") {
-      setFilters({ generation: null, types: [] });
+      setFilters({ generation: null, types: [], search: "" });
     }
   }, [pathname, setFilters]);
 
-  // helper : renvoie les noms de types en minuscules pour un pokemon
+  // Type helpers
   function getPokemonTypeNamesLower(p) {
     if (!p?.types) return [];
     return p.types
@@ -38,10 +37,8 @@ export default function Home() {
         if (!pt) return "";
         if (typeof pt === "string") return pt.toLowerCase();
         if (typeof pt === "number") return String(pt);
-        // si pt est un objet { name, id } ou { type: { name } }
-        if (pt.name) return String(pt.name).toLowerCase();
-        if (pt.type && typeof pt.type === "string") return pt.type.toLowerCase();
-        if (pt.type && pt.type.name) return String(pt.type.name).toLowerCase();
+        if (pt.name) return pt.name.toLowerCase();
+        if (pt.type?.name) return pt.type.name.toLowerCase();
         return "";
       })
       .filter(Boolean);
@@ -50,16 +47,14 @@ export default function Home() {
   function pokemonMatchesGeneration(p, selectedGeneration) {
     if (!selectedGeneration) return true;
     const pGen = p.generationId ?? p.generation?.id ?? p.generation ?? null;
-    if (pGen == null) return false;
-    return String(pGen) === String(selectedGeneration);
+    return pGen != null && String(pGen) === String(selectedGeneration);
   }
 
   function pokemonMatchesTypes(p, selectedTypes) {
     if (!selectedTypes || selectedTypes.length === 0) return true;
     const pTypesLower = getPokemonTypeNamesLower(p);
-    // selectedTypes stored as strings (names) in filters
     return selectedTypes.some((sel) =>
-      pTypesLower.includes(String(sel).toLowerCase())
+      pTypesLower.includes(sel.toLowerCase())
     );
   }
 
@@ -67,72 +62,108 @@ export default function Home() {
     if (!q || q.trim() === "") return true;
     const lowerQ = q.toLowerCase().trim();
     const name =
-      (p.name ?? p.nom ?? (p.names && p.names.fr) ?? "").toString().toLowerCase();
+      (p.name ?? p.nom ?? p?.names?.fr ?? "").toString().toLowerCase();
     return name.includes(lowerQ);
   }
 
-  const filteredPokemons = pokemons.filter((p) => {
-    return (
-      pokemonMatchesSearch(p, search) &&
-      pokemonMatchesGeneration(p, filters.generation) &&
-      pokemonMatchesTypes(p, filters.types)
-    );
-  });
-
+  const filteredPokemons = pokemons.filter((p) =>
+    pokemonMatchesSearch(p, search) &&
+    pokemonMatchesGeneration(p, filters.generation) &&
+    pokemonMatchesTypes(p, filters.types)
+  );
 
   return (
     <main>
+      {/* HERO */}
       <section
-        className="relative h-[60vh] flex items-center justify-center bg-cover bg-center"
+        className="
+          relative 
+          h-[40vh] sm:h-[55vh] 
+          flex items-center justify-center 
+          bg-cover bg-center
+        "
         style={{ backgroundImage: "url('/images/background.jpg')" }}
       >
-        <div className="justify-center text-center ">
-          <div className="flex items-end p-2 justify-center">
+        <div className="text-center px-4">
+
+          {/* Logo + Title */}
+          <div className="flex items-end justify-center gap-1 sm:gap-2">
             <Image
               src="/images/logo.png"
               alt="PokéDoc logo"
               width={80}
               height={80}
-              className="mr-2"
+              className="sm:w-[80px] sm:h-[80px]"
               draggable="false"
               priority
             />
-            <span className="flex text-7xl font-extrabold ml-[-30px] items-end ">
+            <span className="text-5xl sm:text-7xl font-extrabold -ml-4 sm:-ml-6">
               okéDoc
             </span>
           </div>
-          <div className="flex justify-between bg-white rounded-full shadow-md mt-6 border border-black">
-            <input
-              type="text"
-              placeholder="Rechercher ..."
-              className="flex justify-start !border-0 rounded-full"
-            />
-            <Button
-              type="submit"
-              className="flex justify-end rounded-full px-2 m-0.5 text-gray-700 hover:bg-gray-300 focus:ring-0"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
+
+          {/* 🔍 Accessible Search Bar */}
+          <div className="flex justify-center mt-6 sm:mt-8">
+            <label htmlFor="searchHome" className="sr-only">
+              Recherche de Pokémon
+            </label>
+
+            <div className="flex items-center bg-white/90 backdrop-blur-sm border border-gray-300 rounded-full shadow-lg mt-6 px-4 py-2 w-[350px] mx-auto">
+              <Search className="h-6 w-6 text-gray-500 mr-2" />
+
+              <input
+                type="text"
+                placeholder="Rechercher..."
+                value={search}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    search: e.target.value,
+                  }))
+                }
+                className="
+                  flex-1 
+                  bg-transparent 
+                  border-none 
+                  outline-none 
+                  focus:outline-none 
+                  focus:ring-0 
+                  text-gray-800 
+                  placeholder-gray-500
+                  shadow-none
+                "
+              />
+            </div>
           </div>
+
         </div>
       </section>
 
-      <div className="px-10 flex justify-center bg-gray-200">
-        <section className="flex m-5 px-6 py-10 min-h-[300px]">
+      {/* LISTE */}
+      <div className="px-4 sm:px-10 bg-gray-200 flex justify-center">
+        <section className="py-10 w-full max-w-7xl">
+
           {filteredPokemons.length === 0 ? (
             <p className="text-center text-gray-600 text-lg font-medium">
               Aucun Pokémon trouvé 😢
             </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-15">
+            <div className="
+              grid
+              grid-cols-2
+              sm:grid-cols-3
+              md:grid-cols-4
+              lg:grid-cols-5
+              gap-6 sm:gap-10
+            ">
               {filteredPokemons.map((p) => (
                 <CardPokemon key={p.id} pokemon={p} />
               ))}
             </div>
           )}
-        </section>  
+
+        </section>
       </div>
     </main>
   );
-
 }
