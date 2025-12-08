@@ -10,7 +10,7 @@ const handler = toNextJsHandler(auth.handler);
 async function handleSignup(request) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, name } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -20,8 +20,11 @@ async function handleSignup(request) {
     }
 
     const { user, error } = await auth.api.signUpEmail({
-      email,
-      password,
+      body: {
+        email,
+        password,
+        name: name || email.split("@")[0],
+      },
     });
 
     if (error) {
@@ -71,7 +74,6 @@ async function handleSignin(request) {
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
-
 
 export async function POST(request) {
   const url = new URL(request.url);

@@ -82,12 +82,18 @@ export async function POST(request, { params }) {
 
     if (action === "accept") {
       if (requestData.actionType === "AJOUT") {
+        // Extraire generationId du JSON content
+        const generationId =
+          typeof requestData.content === "object"
+            ? requestData.content.generationId
+            : JSON.parse(requestData.content).generationId;
+
         const newPokemon = await prisma.pokemon.create({
           data: {
             name: requestData.name,
             photo: requestData.photo,
             content: requestData.content,
-            generationId: requestData.content.generationId,
+            generationId: parseInt(generationId),
             types: {
               connect: requestData.types.map((type) => ({ id: type.id })),
             },
@@ -114,13 +120,19 @@ export async function POST(request, { params }) {
           );
         }
 
+        // Extraire generationId du JSON content
+        const generationId =
+          typeof requestData.content === "object"
+            ? requestData.content.generationId
+            : JSON.parse(requestData.content).generationId;
+
         const updatedPokemon = await prisma.pokemon.update({
           where: { id: requestData.pokemonId },
           data: {
             name: requestData.name,
             photo: requestData.photo,
             content: requestData.content,
-            generationId: requestData.content.generationId,
+            generationId: parseInt(generationId),
             types: {
               set: [],
               connect: requestData.types.map((type) => ({ id: type.id })),

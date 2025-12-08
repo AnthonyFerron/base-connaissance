@@ -6,11 +6,16 @@ import "./globals.css";
 import { FiltersProvider } from "./providers/FiltersProvider";
 import { AuthProvider } from "./providers/AuthProvider";
 import { createContext, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export const SidebarContext = createContext();
 
 export default function RootLayout({ children }) {
   const [showSidebar, setShowSidebar] = useState(false);
+  const pathname = usePathname();
+
+  // Cacher le header et footer sur la page login
+  const isLoginPage = pathname === "/login";
 
   return (
     <html lang="fr">
@@ -18,16 +23,17 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <FiltersProvider>
             <SidebarContext.Provider value={{ showSidebar, setShowSidebar }}>
-              <MyNavbar />
+              {!isLoginPage && <MyNavbar />}
               <div
-                className={`transition-all duration-300 ${showSidebar ? "pl-64" : "pl-0"
-                  } pt-[84px] flex-1`}
+                className={`transition-all duration-300 ${
+                  !isLoginPage && showSidebar ? "pl-64" : "pl-0"
+                } ${!isLoginPage ? "pt-[84px]" : ""} flex-1`}
               >
                 {children}
               </div>
             </SidebarContext.Provider>
           </FiltersProvider>
-          <Footer />
+          {!isLoginPage && <Footer />}
         </AuthProvider>
       </body>
     </html>

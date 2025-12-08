@@ -10,12 +10,16 @@ export async function GET() {
         types: true,
         generation: true,
       },
-      orderBy: {
-        id: "asc",
-      },
     });
 
-    return NextResponse.json(pokemons);
+    // Trier par numéro de Pokédex (dans content.idpokedex)
+    const sortedPokemons = pokemons.sort((a, b) => {
+      const idA = a.content?.idpokedex || 0;
+      const idB = b.content?.idpokedex || 0;
+      return idA - idB;
+    });
+
+    return NextResponse.json(sortedPokemons);
   } catch (error) {
     console.error("Erreur API /pokemons:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

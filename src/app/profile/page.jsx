@@ -71,6 +71,7 @@ export default function ProfilePage() {
           alt="PokéDoc logo"
           width={64}
           height={64}
+          className="h-auto"
           draggable="false"
           priority
         />
