@@ -34,13 +34,14 @@ export default function QuizPage() {
     return (
       <main
         className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center p-6"
-        style={{ backgroundImage: "url('/images/background.jpg')" }}
+        style={{ backgroundImage: "url('/images/fond-pokemon.png')" }}
       >
         <div className="bg-white/90 p-8 rounded-2xl shadow-xl max-w-md text-center">
           <h1 className="text-4xl font-extrabold mb-4">Quiz Pokémon 🎮</h1>
           <p className="text-lg mb-6">
             Teste tes connaissances Pokémon !<br />
-            Réponds aux <strong>{questions.length} questions</strong> et vois ton score !
+            Réponds aux <strong>{questions.length} questions</strong> et vois
+            ton score !
           </p>
           <button
             onClick={() => setStep(0)}
@@ -72,65 +73,60 @@ export default function QuizPage() {
   };
 
   if (showResult) {
-  const percent = Math.round((score / questions.length) * 100);
-  return (
-    <main
-      className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center p-6 text-center"
-      style={{ backgroundImage: "url('/images/background.jpg')" }}
-    >
-      <div className="bg-white/90 p-8 rounded-xl shadow-xl max-w-md w-full">
-        <h1 className="text-4xl font-extrabold mb-4">Résultat 🎉</h1>
-        <p className="text-2xl font-semibold mb-4">
-          Score : {score} / {questions.length}
-        </p>
-        <p className="text-xl mb-6">
-          {percent === 100 && "Incroyable ! Tu es un vrai Maître Pokémon ! 🌟"}
-          {percent >= 70 && percent < 100 && "Très bien joué ! 💪✨"}
-          {percent >= 40 && percent < 70 && "Pas mal ! Continue ! 🔥"}
-          {percent < 40 && "Ressaye encore ! Tu vas y arriver ❤️‍🔥"}
-        </p>
+    const percent = Math.round((score / questions.length) * 100);
+    return (
+      <main className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+        <div className="bg-white/90 p-8 rounded-xl shadow-xl max-w-md w-full">
+          <h1 className="text-4xl font-extrabold mb-4">Résultat 🎉</h1>
+          <p className="text-2xl font-semibold mb-4">
+            Score : {score} / {questions.length}
+          </p>
+          <p className="text-xl mb-6">
+            {percent === 100 &&
+              "Incroyable ! Tu es un vrai Maître Pokémon ! 🌟"}
+            {percent >= 70 && percent < 100 && "Très bien joué ! 💪✨"}
+            {percent >= 40 && percent < 70 && "Pas mal ! Continue ! 🔥"}
+            {percent < 40 && "Ressaye encore ! Tu vas y arriver ❤️‍🔥"}
+          </p>
 
-        <div className="flex gap-4 justify-center">
-          <button
-            onClick={() => {
-              setStep(-1);
-              setScore(0);
-              setSelected(null);
-              setShowResult(false);
-              setFade(false);
-            }}
-            className="px-6 py-3 bg-[#EC533A] text-white rounded-lg shadow hover:bg-orange-700 transition font-semibold"
-          >
-            Recommencer 🔄
-          </button>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => {
+                setStep(-1);
+                setScore(0);
+                setSelected(null);
+                setShowResult(false);
+                setFade(false);
+              }}
+              className="px-6 py-3 bg-[#EC533A] text-white rounded-lg shadow hover:bg-orange-700 transition font-semibold"
+            >
+              Recommencer 🔄
+            </button>
 
-          <button
-            onClick={async () => {
-              // Exemple : recharger les questions depuis l'API pour un nouveau quiz
-              const res = await fetch("/api/quiz");
-              const data = await res.json();
-              setQuestions(data);
-              setStep(0);
-              setScore(0);
-              setSelected(null);
-              setShowResult(false);
-              setFade(false);
-            }}
-            className="px-6 py-3 bg-[#1D4ED8] text-white rounded-lg shadow hover:bg-blue-700 transition font-semibold"
-          >
-            Passer à un autre quiz 🎯
-          </button>
+            <button
+              onClick={async () => {
+                // Exemple : recharger les questions depuis l'API pour un nouveau quiz
+                const res = await fetch("/api/quiz");
+                const data = await res.json();
+                setQuestions(data);
+                setStep(0);
+                setScore(0);
+                setSelected(null);
+                setShowResult(false);
+                setFade(false);
+              }}
+              className="px-6 py-3 bg-[#1D4ED8] text-white rounded-lg shadow hover:bg-blue-700 transition font-semibold"
+            >
+              Passer à un autre quiz 🎯
+            </button>
+          </div>
         </div>
-      </div>
-    </main>
-  );
-}
+      </main>
+    );
+  }
 
   return (
-    <main
-      className="flex flex-col items-center justify-start min-h-screen bg-cover bg-center p-6"
-      style={{ backgroundImage: "url('/images/background.jpg')" }}
-    >
+    <main className="flex flex-col items-center justify-start min-h-screen p-6">
       <div
         className={`bg-white/90 mt-10 p-6 rounded-xl shadow-xl max-w-md w-full transition-opacity duration-500 ${
           fade ? "opacity-50" : "opacity-100"
@@ -152,12 +148,13 @@ export default function QuizPage() {
         {/* Question et image */}
         {current.image && (
           <div className="mb-4 flex justify-center">
-            <Image 
-            src={current.image} 
-            alt={current.question} 
-            height={20} 
-            width={20}
-            objectFit="fill"/>
+            <Image
+              src={current.image}
+              alt={current.question}
+              height={20}
+              width={20}
+              objectFit="fill"
+            />
           </div>
         )}
         <h2 className="text-xl font-bold mb-6">{current.question}</h2>
@@ -166,7 +163,8 @@ export default function QuizPage() {
         <div className="flex flex-col gap-4">
           {current.choices.map((choice) => {
             const isCorrect = selected && choice === current.correct;
-            const isWrong = selected && choice === selected && choice !== current.correct;
+            const isWrong =
+              selected && choice === selected && choice !== current.correct;
 
             return (
               <button
@@ -175,13 +173,15 @@ export default function QuizPage() {
                 onClick={() => handleAnswer(choice)}
                 className={`
                   border px-4 py-3 rounded-lg text-left text-lg transition-all duration-200
-                  ${selected
-                    ? isCorrect
-                      ? "bg-green-500 text-white border-green-600"
-                      : isWrong
+                  ${
+                    selected
+                      ? isCorrect
+                        ? "bg-green-500 text-white border-green-600"
+                        : isWrong
                         ? "bg-red-500 text-white border-red-600"
                         : "bg-gray-200"
-                    : "hover:bg-gray-100"}
+                      : "hover:bg-gray-100"
+                  }
                 `}
               >
                 {choice}

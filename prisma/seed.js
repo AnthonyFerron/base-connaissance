@@ -262,7 +262,18 @@ async function main() {
     },
   });
 
-  console.log("Utilisateur admin créé:", adminUser.name);
+  const antho = await prisma.user.upsert({
+    where: { email: "anthony.ferron74@gmail.com" },
+    update: {},
+    create: {
+      email: "anthony.ferron74@gmail.com",
+      name: "Antho",
+      role: "ADMIN",
+      emailVerified: true,
+    },
+  });
+
+  console.log("Utilisateur admin créé:", adminUser.name, antho.name);
 
   // Créer quelques Pokémon
   const bulbizarre = await prisma.pokemon.upsert({
@@ -605,7 +616,7 @@ async function main() {
   console.log("Commentaires créés: 2");
 
   //Creer questions quiz
-    const questionsData = [
+  const questionsData = [
     {
       question: "Quel est le type principal de Pikachu ?",
       image: "/images/quiz/pikachu.png",
@@ -624,63 +635,64 @@ async function main() {
       correct: "Mewtwo",
       choices: ["Mew", "Mewtwo", "Deoxys", "Genesect"],
     },
-        {
-        question: "Quel type est super efficace contre les Pokémon Feu ?",
-        image: null,
-        choices: ["Eau", "Électrik", "Fée", "Normal"],
-        correct: "Eau",
-      },
-      {
-        question: "Lequel de ces Pokémon peut évoluer avec une pierre feu ?",
-        image: "/images/quiz/evoli.png",
-        choices: ["Evoli", "Pikachu", "Tarsal", "Caninos"],
-        correct: "Caninos",
-      },
-      {
-        question: "Quel Pokémon est le numéro 1 du Pokédex national ?",
-        image: "/images/quiz/bulbizarre.png",
-        choices: ["Bulbizarre", "Pikachu", "Mew", "Arceus"],
-        correct: "Bulbizarre",
-      },
-      {
-        question: "Quel type est immunisé contre les attaques Électrik ?",
-        image: null,
-        choices: ["Sol", "Eau", "Acier", "Normal"],
-        correct: "Sol",
-      },
-      {
-        question: "Quel Pokémon est la mascotte officielle de Pokémon ?",
-        image: "/images/quiz/pikachu2.png",
-        choices: ["Pikachu", "Sacha", "Ronflex", "Dracaufeu"],
-        correct: "Pikachu",
-      },
-      {
-        question: "Quelle région est introduite dans Pokémon Or & Argent ?",
-        image: null,
-        choices: ["Kanto", "Kalos", "Johto", "Galar"],
-        correct: "Johto",
-      },
-      {
-        question: "Combien de formes différentes peut prendre Evoli via évolution ?",
-        image: "/images/quiz/evolutions_evoli.png",
-        choices: ["5", "7", "8", "9"],
-        correct: "8",
-      },
+    {
+      question: "Quel type est super efficace contre les Pokémon Feu ?",
+      image: null,
+      choices: ["Eau", "Électrik", "Fée", "Normal"],
+      correct: "Eau",
+    },
+    {
+      question: "Lequel de ces Pokémon peut évoluer avec une pierre feu ?",
+      image: "/images/quiz/evoli.png",
+      choices: ["Evoli", "Pikachu", "Tarsal", "Caninos"],
+      correct: "Caninos",
+    },
+    {
+      question: "Quel Pokémon est le numéro 1 du Pokédex national ?",
+      image: "/images/quiz/bulbizarre.png",
+      choices: ["Bulbizarre", "Pikachu", "Mew", "Arceus"],
+      correct: "Bulbizarre",
+    },
+    {
+      question: "Quel type est immunisé contre les attaques Électrik ?",
+      image: null,
+      choices: ["Sol", "Eau", "Acier", "Normal"],
+      correct: "Sol",
+    },
+    {
+      question: "Quel Pokémon est la mascotte officielle de Pokémon ?",
+      image: "/images/quiz/pikachu2.png",
+      choices: ["Pikachu", "Sacha", "Ronflex", "Dracaufeu"],
+      correct: "Pikachu",
+    },
+    {
+      question: "Quelle région est introduite dans Pokémon Or & Argent ?",
+      image: null,
+      choices: ["Kanto", "Kalos", "Johto", "Galar"],
+      correct: "Johto",
+    },
+    {
+      question:
+        "Combien de formes différentes peut prendre Evoli via évolution ?",
+      image: "/images/quiz/evolutions_evoli.png",
+      choices: ["5", "7", "8", "9"],
+      correct: "8",
+    },
   ];
 
   for (const q of questionsData) {
-    await prisma.quizQuestion.create({ 
-      data: { 
+    await prisma.quizQuestion.create({
+      data: {
         question: q.question,
         image: q.image,
         difficulty: q.difficulty ?? "medium",
         answers: {
-          create: q.choices.map(c => ({
+          create: q.choices.map((c) => ({
             text: c,
-            isCorrect: c === q.correct
-          }))
-        }
-      }
+            isCorrect: c === q.correct,
+          })),
+        },
+      },
     });
   }
 
@@ -700,6 +712,7 @@ async function main() {
       status: "EN_ATTENTE",
       authorId: adminUser.id,
       pokemonId: bulbizarre.id, // Référence temporaire obligatoire
+      generationId: generations.find((g) => g.name === "Kanto")?.id || 1,
       types: {
         connect: [
           { id: types.find((t) => t.name === "Ténèbres")?.id },
@@ -711,7 +724,6 @@ async function main() {
 
   console.log("Requête d'ajout créée: 1");
   console.log("Seeding terminé avec succès !");
-
 }
 
 main()

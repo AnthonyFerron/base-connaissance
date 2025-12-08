@@ -48,6 +48,7 @@ model Generation {
   generationNumber Int    @unique
 
   pokemons Pokemon[]
+  requests Request[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -75,7 +76,7 @@ model Pokemon {
   generation   Generation @relation(fields: [generationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   generationId Int
 
-  types    Type[] @relation("PokemonToType")
+  types    Type[]        @relation("PokemonToType")
   comments Commentaire[]
   requests Request[]
 
@@ -104,7 +105,7 @@ model Request {
   id           Int           @id @default(autoincrement())
   name         String
   photo        String
-  types        Type[]       @relation("RequestToType")
+  types        Type[]        @relation("RequestToType")
   content      Json
   actionType   ActionType
   status       RequestStatus @default(EN_ATTENTE)
@@ -113,10 +114,14 @@ model Request {
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   authorId String
 
+  generation   Generation @relation(fields: [generationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  generationId Int
+
   pokemon   Pokemon? @relation(fields: [pokemonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   pokemonId Int?
 
   @@index([authorId])
+  @@index([generationId])
   @@index([pokemonId])
   @@index([status])
 }
@@ -156,19 +161,19 @@ model Account {
 }
 
 model QuizQuestion {
-  id        Int            @id @default(autoincrement())
-  question  String
-  image     String?       
-  difficulty String?      
+  id         Int     @id @default(autoincrement())
+  question   String
+  image      String?
+  difficulty String?
 
-  answers   QuizAnswer[]
+  answers QuizAnswer[]
 }
 
 model QuizAnswer {
-  id          Int           @id @default(autoincrement())
-  text        String
-  isCorrect   Boolean       @default(false)
+  id        Int     @id @default(autoincrement())
+  text      String
+  isCorrect Boolean @default(false)
 
-  questionId  Int
-  question    QuizQuestion  @relation(fields: [questionId], references: [id])
+  questionId Int
+  question   QuizQuestion @relation(fields: [questionId], references: [id])
 }

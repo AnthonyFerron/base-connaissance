@@ -38,7 +38,9 @@ export default function LoginPage() {
           password,
         });
 
-        setSuccess("Compte créé avec succès ! Vous pouvez maintenant vous connecter.");
+        setSuccess(
+          "Compte créé avec succès ! Vous pouvez maintenant vous connecter."
+        );
         setMode("login");
       } else {
         await signin({ email, password });
@@ -60,7 +62,7 @@ export default function LoginPage() {
             alt="PokéDoc logo"
             width={80}
             height={80}
-            className="mr-2"
+            className="mr-2 h-auto"
             draggable="false"
             priority
           />
@@ -98,7 +100,9 @@ export default function LoginPage() {
               placeholder="Mot de passe"
               className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#EC533A] text-base"
               required
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              autoComplete={
+                mode === "login" ? "current-password" : "new-password"
+              }
               disabled={isLoading}
             />
           </div>
@@ -118,8 +122,12 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {error && <p className="text-red-500 text-center mt-2 text-sm">{error}</p>}
-        {success && <p className="text-green-600 text-center mt-2 text-sm">{success}</p>}
+        {error && (
+          <p className="text-red-500 text-center mt-2 text-sm">{error}</p>
+        )}
+        {success && (
+          <p className="text-green-600 text-center mt-2 text-sm">{success}</p>
+        )}
 
         {mode === "signup" ? (
           <button

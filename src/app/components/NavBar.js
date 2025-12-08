@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useState, useContext } from "react";
-import {
-  Button,
-  Navbar,
-  Checkbox,
-} from "flowbite-react";
+import { Button, Navbar, Checkbox } from "flowbite-react";
 import { ChevronLeft, CirclePlus, Pen, Search, X, Shield } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useFilters } from "@/app/providers/FiltersProvider";
@@ -31,12 +27,11 @@ export default function MyNavbar() {
   const [allPokemons, setAllPokemons] = useState([]);
   const [showResults, setShowResults] = useState(false);
 
-
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (!filters.search) return;
-    if (pathname !== '/') {
-      router.push('/'); // La Home lira filters.search
+    if (pathname !== "/") {
+      router.push("/"); // La Home lira filters.search
     }
   };
   // ✅ Déconnexion
@@ -59,7 +54,6 @@ export default function MyNavbar() {
     }
   };
 
-
   // 🔄 Synchroniser quand user change (connexion/déconnexion)
   useEffect(() => {
     setPseudo(user?.name || "");
@@ -79,11 +73,12 @@ export default function MyNavbar() {
   // ✅ Suppression logique du compte
   const handleDeleteAccount = async () => {
     try {
-      await updateUser({
-        name: "deletedUser",
-        email: "deleted@pokeme.com",
-        role: "deleted",
-      },
+      await updateUser(
+        {
+          name: "deletedUser",
+          email: "deleted@pokeme.com",
+          role: "deleted",
+        },
         handleLogout()
       );
     } catch (error) {
@@ -159,12 +154,8 @@ export default function MyNavbar() {
   };
 
   const filteredResults = allPokemons
-    .filter((p) =>
-      p.name?.toLowerCase().includes(filters.search.toLowerCase())
-    )
+    .filter((p) => p.name?.toLowerCase().includes(filters.search.toLowerCase()))
     .slice(0, 6);
-
-
 
   return (
     <>
@@ -205,9 +196,7 @@ export default function MyNavbar() {
         {/* Droite : Barre de recherche (sauf sur accueil) */}
         {pathname !== "/" && (
           <div className="relative w-full max-w-md">
-            <div
-              className="flex items-center bg-gray-100 rounded-full px-3 py-1 border border-gray-300"
-            >
+            <div className="flex items-center bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
               <Search className="w-5 h-5 text-gray-500" />
 
               <input
@@ -235,35 +224,39 @@ export default function MyNavbar() {
             </div>
 
             {/* 🔽 Résultats de la recherche */}
-            {showResults && filters.search.length > 0 && filteredResults.length > 0 && (
-              <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg mt-2 shadow-xl z-50 max-h-64 overflow-y-auto">
-                {filteredResults.map((p) => (
-                  <div
-                    key={p.id}
-                    onClick={() => {
-                      setShowResults(false);
-                      router.push(`/pokemon/${p.id}`);
-                    }}
-                    className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    <Image
-                      src={p.photo}
-                      alt={p.name}
-                      width={40}
-                      height={40}
-                      objectFit="fill"
-                    />
-                    <span className="font-medium">{p.name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {showResults &&
+              filters.search.length > 0 &&
+              filteredResults.length > 0 && (
+                <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg mt-2 shadow-xl z-50 max-h-64 overflow-y-auto">
+                  {filteredResults.map((p) => (
+                    <div
+                      key={p.id}
+                      onClick={() => {
+                        setShowResults(false);
+                        router.push(`/pokemon/${p.id}`);
+                      }}
+                      className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <Image
+                        src={p.photo}
+                        alt={p.name}
+                        width={40}
+                        height={40}
+                        objectFit="fill"
+                      />
+                      <span className="font-medium">{p.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            {showResults && filters.search.length > 0 && filteredResults.length === 0 && (
-              <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg mt-2 shadow-xl z-50 p-3 text-center text-gray-500">
-                Aucun résultat
-              </div>
-            )}
+            {showResults &&
+              filters.search.length > 0 &&
+              filteredResults.length === 0 && (
+                <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg mt-2 shadow-xl z-50 p-3 text-center text-gray-500">
+                  Aucun résultat
+                </div>
+              )}
           </div>
         )}
         {pathname !== "/" && (
@@ -275,12 +268,12 @@ export default function MyNavbar() {
           </button>
         )}
         <div className="flex flex-row gap-10 items-center">
-
           <Image
             src="/images/logo.png"
             alt="PokéDoc logo"
             width={40}
             height={40}
+            className="h-auto cursor-pointer"
             draggable="false"
             priority
             onClick={() => router.push("/")}
@@ -357,7 +350,6 @@ export default function MyNavbar() {
               Se Connecter
             </Button>
           )}
-
         </div>
       </Navbar>
 
@@ -373,20 +365,21 @@ export default function MyNavbar() {
             shadow-lg 
             transform transition-transform 
             duration-300 
-            ${showSidebar ? "translate-x-0" : "-translate-x-full"
-          }`}
+            ${showSidebar ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex justify-between items-center p-1 border-b">
           <h2 className="text-lg font-semibold">Filtres</h2>
           <div className="flex justify-end gap-2">
-            <button onClick={resetFilters} className="p-1 bg-red-200 rounded-lg border">
+            <button
+              onClick={resetFilters}
+              className="p-1 bg-red-200 rounded-lg border"
+            >
               Reset
             </button>
             <button onClick={closeSidebar}>
               <X className="w-5 h-5" />
             </button>
           </div>
-
         </div>
 
         <div className="p-4 overflow-y-auto max-h-full pb-6">

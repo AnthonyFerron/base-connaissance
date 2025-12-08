@@ -54,23 +54,23 @@ export default function Home() {
   function pokemonMatchesTypes(p, selectedTypes) {
     if (!selectedTypes || selectedTypes.length === 0) return true;
     const pTypesLower = getPokemonTypeNamesLower(p);
-    return selectedTypes.some((sel) =>
-      pTypesLower.includes(sel.toLowerCase())
-    );
+    return selectedTypes.some((sel) => pTypesLower.includes(sel.toLowerCase()));
   }
 
   function pokemonMatchesSearch(p, q) {
     if (!q || q.trim() === "") return true;
     const lowerQ = q.toLowerCase().trim();
-    const name =
-      (p.name ?? p.nom ?? p?.names?.fr ?? "").toString().toLowerCase();
+    const name = (p.name ?? p.nom ?? p?.names?.fr ?? "")
+      .toString()
+      .toLowerCase();
     return name.includes(lowerQ);
   }
 
-  const filteredPokemons = pokemons.filter((p) =>
-    pokemonMatchesSearch(p, search) &&
-    pokemonMatchesGeneration(p, filters.generation) &&
-    pokemonMatchesTypes(p, filters.types)
+  const filteredPokemons = pokemons.filter(
+    (p) =>
+      pokemonMatchesSearch(p, search) &&
+      pokemonMatchesGeneration(p, filters.generation) &&
+      pokemonMatchesTypes(p, filters.types)
   );
 
   return (
@@ -80,13 +80,10 @@ export default function Home() {
         className="
           relative 
           h-[40vh] sm:h-[55vh] 
-          flex items-center justify-center 
-          bg-cover bg-center
+          flex items-center justify-center
         "
-        style={{ backgroundImage: "url('/images/background.jpg')" }}
       >
         <div className="text-center px-4">
-
           {/* Logo + Title */}
           <div className="flex items-end justify-center gap-1 sm:gap-2">
             <Image
@@ -94,7 +91,7 @@ export default function Home() {
               alt="PokéDoc logo"
               width={80}
               height={80}
-              className="sm:w-[80px] sm:h-[80px]"
+              className="sm:w-[80px] h-auto"
               draggable="false"
               priority
             />
@@ -136,14 +133,15 @@ export default function Home() {
               />
             </div>
           </div>
-
         </div>
       </section>
 
-              <div className="max-w-md mx-auto my-8">
+      <div className="max-w-md mx-auto my-8">
         <Link href="/quiz">
-          <div className="bg-[#EC533A] text-white p-6 rounded-xl shadow-lg 
-                          hover:bg-orange-700 cursor-pointer transition transform hover:scale-105">
+          <div
+            className="bg-[#EC533A] text-white p-6 rounded-xl shadow-lg 
+                          hover:bg-orange-700 cursor-pointer transition transform hover:scale-105"
+          >
             <h2 className="text-2xl font-bold mb-2">🎮 Quiz Pokémon</h2>
             <p>Teste tes connaissances avec un quiz aléatoire !</p>
           </div>
@@ -153,20 +151,21 @@ export default function Home() {
       {/* LISTE */}
       <div className="px-4 sm:px-10 bg-gray-200 flex justify-center">
         <section className="py-10 w-full max-w-7xl">
-
           {filteredPokemons.length === 0 ? (
             <p className="text-center text-gray-600 text-lg font-medium">
               Aucun Pokémon trouvé 😢
             </p>
           ) : (
-            <div className="
+            <div
+              className="
               grid
               grid-cols-2
               sm:grid-cols-3
               md:grid-cols-4
               lg:grid-cols-5
               gap-6 sm:gap-10
-            ">
+            "
+            >
               {filteredPokemons.map((p) => (
                 <Link
                   key={p.id}
@@ -178,7 +177,6 @@ export default function Home() {
               ))}
             </div>
           )}
-
         </section>
       </div>
     </main>

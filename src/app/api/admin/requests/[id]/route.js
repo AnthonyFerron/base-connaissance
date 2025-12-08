@@ -82,12 +82,25 @@ export async function POST(request, { params }) {
 
     if (action === "accept") {
       if (requestData.actionType === "AJOUT") {
+        // Le content ne contient que idpokedex et description
+        const parsedContent =
+          typeof requestData.content === "object"
+            ? requestData.content
+            : JSON.parse(requestData.content);
+
+        const pokemonContent = {
+          idpokedex: parsedContent.idpokedex,
+          description: parsedContent.description,
+        };
+
         const newPokemon = await prisma.pokemon.create({
           data: {
             name: requestData.name,
             photo: requestData.photo,
-            content: requestData.content,
-            generationId: requestData.content.generationId,
+            content: pokemonContent,
+            generation: {
+              connect: { id: requestData.generationId },
+            },
             types: {
               connect: requestData.types.map((type) => ({ id: type.id })),
             },
@@ -114,13 +127,26 @@ export async function POST(request, { params }) {
           );
         }
 
+        // Le content ne contient que idpokedex et description
+        const parsedContent =
+          typeof requestData.content === "object"
+            ? requestData.content
+            : JSON.parse(requestData.content);
+
+        const pokemonContent = {
+          idpokedex: parsedContent.idpokedex,
+          description: parsedContent.description,
+        };
+
         const updatedPokemon = await prisma.pokemon.update({
           where: { id: requestData.pokemonId },
           data: {
             name: requestData.name,
             photo: requestData.photo,
-            content: requestData.content,
-            generationId: requestData.content.generationId,
+            content: pokemonContent,
+            generation: {
+              connect: { id: requestData.generationId },
+            },
             types: {
               set: [],
               connect: requestData.types.map((type) => ({ id: type.id })),

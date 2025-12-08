@@ -2,20 +2,19 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { useAuth } from "@/app/providers/AuthProvider";
 
 export default function PokemonPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { user, loading: sessionLoading } = useAuth();
   const [pokemon, setPokemon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
-
-  const [user, setUser] = useState(null);
-  const [sessionLoading, setSessionLoading] = useState(true);
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     async function fetchPokemon() {
@@ -33,61 +32,8 @@ export default function PokemonPage() {
       }
     }
 
-    async function fetchUser() {
-      setSessionLoading(true);
-      try {
-        /*
-        const sessionRes = await fetch("/api/auth/get-session", {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (sessionRes.ok) {
-          const sessionData = await sessionRes.json();
-          if (sessionData?.user) {
-            setUser(sessionData.user);
-            return;
-          }
-        }
-*/
-        const session = await authClient.getSession();
-        if (session?.user) {
-          setUser(session.user);
-        } else {
-          setUser(null);
-        }
-      } catch (e) {
-        setUser(null);
-      } finally {
-        setSessionLoading(false);
-      }
-    }
-
     if (id) fetchPokemon();
-    fetchUser();
   }, [id]);
-
-  // Écouter les changements de focus pour rafraîchir la session
-  useEffect(() => {
-    const handleFocus = () => {
-      async function refetchUser() {
-        try {
-          const session = await authClient.getSession();
-          if (session?.user && !user) {
-            setUser(session.user);
-          }
-        } catch (e) {
-          // Session non disponible
-        }
-      }
-      refetchUser();
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [user]);
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
@@ -173,11 +119,25 @@ export default function PokemonPage() {
           <div className="flex-shrink-0 flex flex-col p-3 bg-[#D9D9D9] rounded-[24px] items-center justify-center w-1/2 md:w-1/3">
             <div className="relative w-56 h-56 overflow-hidden rounded-lg">
               <Image
-                src={pokemon.photo}
+                src={
+                  imgError ||
+                  !pokemon.photo ||
+                  pokemon.photo.startsWith("/images/pokemon/")
+                    ? `https://www.pokemon.com/static-assets/content-assets/cms2/img/pokedex/full/${String(
+                        pokemon.content?.idpokedex || pokemon.id
+                      ).padStart(3, "0")}.png`
+                    : pokemon.photo
+                }
                 alt={pokemon.name}
                 fill
                 className="object-cover"
                 priority
+                onError={() => setImgError(true)}
+                unoptimized={
+                  imgError ||
+                  !pokemon.photo ||
+                  pokemon.photo.startsWith("/images/pokemon/")
+                }
               />
             </div>
           </div>

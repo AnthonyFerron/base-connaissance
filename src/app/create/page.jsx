@@ -2,10 +2,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { authClient } from "@/lib/auth-client";
+import { useAuth } from "@/app/providers/AuthProvider";
 
 export default function CreatePokemonPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     idPokedex: "",
     generationId: "",
@@ -20,33 +21,19 @@ export default function CreatePokemonPage() {
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
 
   // Vérifier l'authentification au chargement de la page
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        
-        // Si l'API échoue, essayer avec authClient
-        if (authClient.user) {
-          setCheckingAuth(false);
-          return;
-        }
+    if (authLoading) return;
 
-        // Aucune session trouvée, rediriger vers login
-        router.push("/login");
-      } catch (error) {
-        console.error("Erreur vérification auth:", error);
-        // En cas d'erreur, rediriger vers login
-        router.push("/login");
-      }
+    if (!user) {
+      router.push("/login");
     }
-    checkAuth();
-  }, [router]);
+  }, [user, authLoading, router]);
 
   // Charger les générations et types
   useEffect(() => {
-    if (checkingAuth) return; // Ne pas charger les données tant que l'auth n'est pas vérifiée
+    if (authLoading || !user) return; // Ne pas charger les données tant que l'auth n'est pas vérifiée
 
     async function loadData() {
       try {
@@ -63,7 +50,7 @@ export default function CreatePokemonPage() {
       }
     }
     loadData();
-  }, [checkingAuth]);
+  }, [authLoading, user]);
 
   // Gestion des changements de formulaire
   const handleInputChange = (e) => {
@@ -162,7 +149,7 @@ export default function CreatePokemonPage() {
   };
 
   // Afficher un écran de chargement pendant la vérification de l'authentification
-  if (checkingAuth) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center py-8 px-2">
         <div className="flex flex-col items-center gap-4">

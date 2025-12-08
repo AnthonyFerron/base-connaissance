@@ -118,8 +118,8 @@ export async function POST(request) {
         content: {
           idpokedex: idPokedex,
           description: description,
-          generationId: generationId,
         },
+        generationId: parseInt(generationId),
         actionType: "MODIFICATION",
         status: "EN_ATTENTE",
         authorId: userId,

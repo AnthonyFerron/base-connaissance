@@ -2,11 +2,12 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import { authClient } from "@/lib/auth-client";
+import { useAuth } from "@/app/providers/AuthProvider";
 
 export default function EditPokemonPage() {
   const router = useRouter();
   const { id } = useParams();
+  const { user, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     idPokedex: "",
     generationId: "",
@@ -23,31 +24,19 @@ export default function EditPokemonPage() {
   const [currentPhoto, setCurrentPhoto] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
 
   // Vérifier l'authentification au chargement de la page
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        
-        // Si l'API échoue, essayer avec authClient
-        if (authClient.user) {
-          setCheckingAuth(false);
-          return;
-        }
+    if (authLoading) return;
 
-        router.push("/login");
-      } catch (error) {
-        console.error("Erreur vérification auth:", error);
-        router.push("/login");
-      }
+    if (!user) {
+      router.push("/login");
     }
-    checkAuth();
-  }, [router]);
+  }, [user, authLoading, router]);
 
   // Charger les données du Pokémon existant
   useEffect(() => {
-    if (checkingAuth || !id) return;
+    if (authLoading || !user || !id) return;
 
     async function loadPokemon() {
       try {
@@ -79,11 +68,11 @@ export default function EditPokemonPage() {
     }
 
     loadPokemon();
-  }, [checkingAuth, id]);
+  }, [authLoading, user, id]);
 
   // Charger les générations et types
   useEffect(() => {
-    if (checkingAuth) return;
+    if (authLoading || !user) return;
 
     async function loadData() {
       try {
@@ -100,7 +89,7 @@ export default function EditPokemonPage() {
       }
     }
     loadData();
-  }, [checkingAuth]);
+  }, [authLoading, user]);
 
   // Gestion des changements de formulaire
   const handleInputChange = (e) => {
