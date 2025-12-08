@@ -1,11 +1,11 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
   output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -59,8 +59,8 @@ model Type {
   image String?
   color String?
 
-  pokemons Pokemon[]
-  requests Request[]
+  pokemons Pokemon[] @relation("PokemonToType")
+  requests Request[] @relation("RequestToType")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -75,7 +75,7 @@ model Pokemon {
   generation   Generation @relation(fields: [generationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   generationId Int
 
-  types    Type[]
+  types    Type[] @relation("PokemonToType")
   comments Commentaire[]
   requests Request[]
 
@@ -104,7 +104,7 @@ model Request {
   id           Int           @id @default(autoincrement())
   name         String
   photo        String
-  types        Type[]
+  types        Type[]       @relation("RequestToType")
   content      Json
   actionType   ActionType
   status       RequestStatus @default(EN_ATTENTE)
@@ -153,4 +153,22 @@ model Account {
   updatedAt             DateTime  @updatedAt
 
   @@map("account")
+}
+
+model QuizQuestion {
+  id        Int            @id @default(autoincrement())
+  question  String
+  image     String?       
+  difficulty String?      
+
+  answers   QuizAnswer[]
+}
+
+model QuizAnswer {
+  id          Int           @id @default(autoincrement())
+  text        String
+  isCorrect   Boolean       @default(false)
+
+  questionId  Int
+  question    QuizQuestion  @relation(fields: [questionId], references: [id])
 }

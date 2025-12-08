@@ -29,23 +29,9 @@ export default function EditPokemonPage() {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const response = await fetch("/api/auth/get-session", {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.user) {
-            setCheckingAuth(false);
-            return;
-          }
-        }
-
-        const session = await authClient.getSession();
-        if (session && session.user) {
+        
+        // Si l'API échoue, essayer avec authClient
+        if (authClient.user) {
           setCheckingAuth(false);
           return;
         }

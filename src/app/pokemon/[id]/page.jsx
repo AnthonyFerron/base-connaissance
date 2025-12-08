@@ -36,6 +36,7 @@ export default function PokemonPage() {
     async function fetchUser() {
       setSessionLoading(true);
       try {
+        /*
         const sessionRes = await fetch("/api/auth/get-session", {
           credentials: "include",
           headers: {
@@ -50,7 +51,7 @@ export default function PokemonPage() {
             return;
           }
         }
-
+*/
         const session = await authClient.getSession();
         if (session?.user) {
           setUser(session.user);

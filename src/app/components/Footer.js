@@ -14,13 +14,13 @@ export default function AppFooter() {
                     className=""
                     draggable="false"
                     priority
-                    href="/"
+                    onClick={() => router.push("/")}
                   />
       <FooterLinkGroup className="ml-6 space-x-6 text-black">
-        <FooterLink href="#">Contact</FooterLink>
-        <FooterLink href="#">Credits</FooterLink>
-        <FooterLink href="#">A propos</FooterLink>
-        <FooterLink href="#">Mention legale</FooterLink>
+        <FooterLink href="/contact">Contact</FooterLink>
+        <FooterLink href="/credits">Credits</FooterLink>
+        <FooterLink href="/apropos">A propos</FooterLink>
+        <FooterLink href="/mentions-legales">Mention legale</FooterLink>
       </FooterLinkGroup>
         </div>
     </Footer>
