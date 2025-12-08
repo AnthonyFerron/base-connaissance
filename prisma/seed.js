@@ -712,6 +712,7 @@ async function main() {
       status: "EN_ATTENTE",
       authorId: adminUser.id,
       pokemonId: bulbizarre.id, // Référence temporaire obligatoire
+      generationId: generations.find((g) => g.name === "Kanto")?.id || 1,
       types: {
         connect: [
           { id: types.find((t) => t.name === "Ténèbres")?.id },
