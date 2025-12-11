@@ -185,13 +185,13 @@ export default function EditPokemonPage() {
     router.push(`/pokemon/${id}`);
   };
 
-  if (checkingAuth || loadingPokemon) {
+  if (authLoading || loadingPokemon) {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center py-8 px-2">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-gray-600">
-            {checkingAuth
+            {authLoading
               ? "Vérification de la connexion..."
               : "Chargement du Pokémon..."}
           </p>
