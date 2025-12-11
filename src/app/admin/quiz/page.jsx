@@ -7,12 +7,13 @@ import NavBar from "@/app/components/NavBar";
 import Image from "next/image";
 import ConfirmModal from "@/app/components/ConfirmModal";
 import AlertModal from "@/app/components/AlertModal";
+import { authClient } from "@/lib/auth-client";
 
 export default function AdminQuizPage() {
   const router = useRouter();
+  const { data, isPending } = authClient.useSession();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [formData, setFormData] = useState({
@@ -37,37 +38,20 @@ export default function AdminQuizPage() {
   });
 
   useEffect(() => {
-    checkAdminAccess();
-  }, []);
+    if (isPending) return;
 
-  const checkAdminAccess = async () => {
-    try {
-      const response = await fetch("/api/auth/test-session");
-
-      if (!response.ok) {
-        router.push("/login");
-        return;
-      }
-
-      const data = await response.json();
-
-      if (!data.user) {
-        router.push("/login");
-        return;
-      }
-
-      if (data.user.role !== "ADMIN") {
-        router.push("/");
-        return;
-      }
-
-      setIsAdmin(true);
-      fetchQuestions();
-    } catch (error) {
-      console.error("Erreur vérification admin:", error);
+    if (!data?.user) {
       router.push("/login");
+      return;
     }
-  };
+
+    if (data.user.role !== "ADMIN") {
+      router.push("/");
+      return;
+    }
+
+    fetchQuestions();
+  }, [isPending, data, router]);
 
   const fetchQuestions = async () => {
     try {
@@ -219,12 +203,16 @@ export default function AdminQuizPage() {
     setFormData({ ...formData, answers: newAnswers });
   };
 
-  if (loading || !isAdmin) {
+  if (isPending || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl">Chargement...</div>
       </div>
     );
+  }
+
+  if (!data?.user || data.user.role !== "ADMIN") {
+    return null;
   }
 
   return (

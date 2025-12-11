@@ -7,9 +7,11 @@ import { FaArrowLeft, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import NavBar from "@/app/components/NavBar";
 import ConfirmModal from "@/app/components/ConfirmModal";
 import AlertModal from "@/app/components/AlertModal";
+import { authClient } from "@/lib/auth-client";
 
 export default function RequestDetailPage({ params }) {
   const router = useRouter();
+  const { data, isPending } = authClient.useSession();
   const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -39,24 +41,21 @@ export default function RequestDetailPage({ params }) {
 
   useEffect(() => {
     const loadRequest = async () => {
+      if (isPending) return;
+
+      if (!data?.user || data.user.role !== "ADMIN") {
+        router.push("/login");
+        return;
+      }
+
       try {
         const { id } = await params;
-
-        // Vérifier l'authentification
-        const authResponse = await fetch("/api/auth/test-session");
-        if (
-          !authResponse.ok ||
-          (await authResponse.json()).user?.role !== "ADMIN"
-        ) {
-          router.push("/login");
-          return;
-        }
 
         // Charger la requête
         const response = await fetch(`/api/admin/requests`);
         if (response.ok) {
-          const data = await response.json();
-          const foundRequest = data.find((r) => r.id === parseInt(id));
+          const requestsData = await response.json();
+          const foundRequest = requestsData.find((r) => r.id === parseInt(id));
           setRequest(foundRequest);
         }
       } catch (error) {
@@ -67,7 +66,7 @@ export default function RequestDetailPage({ params }) {
     };
 
     loadRequest();
-  }, [params, router]);
+  }, [params, router, isPending, data]);
 
   const handleAction = (action) => {
     if (!request) return;
@@ -160,6 +159,29 @@ export default function RequestDetailPage({ params }) {
       </span>
     );
   };
+
+  if (isPending || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl">Chargement...</div>
+      </div>
+    );
+  }
+
+  if (!data?.user || data.user.role !== "ADMIN") {
+    return null;
+  }
+
+  if (!request) {
+    return (
+      <>
+        <NavBar />
+        <div className="container mx-auto px-4 py-8">
+          <p>Demande introuvable</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

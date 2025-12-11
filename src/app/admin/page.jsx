@@ -7,61 +7,32 @@ import NavBar from "@/app/components/NavBar";
 
 export default function AdminPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isPending } = authClient.useSession();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Essayer avec l'API de test d'abord pour récupérer le rôle
-        const response = await fetch("/api/auth/test-session");
+    if (isPending) return;
 
-        console.log("Response status:", response.status);
+    if (!data?.user) {
+      router.push("/login");
+      return;
+    }
 
-        if (!response.ok) {
-          console.log("Pas authentifié, redirection vers login");
-          router.push("/login");
-          return;
-        }
+    if (data.user.role !== "ADMIN") {
+      router.push("/");
+      return;
+    }
+  }, [data, isPending, router]);
 
-        const data = await response.json();
-        console.log("Données utilisateur:", data);
-        console.log("Role:", data.user?.role);
-
-        if (!data.user) {
-          console.log("Pas d'utilisateur, redirection vers login");
-          router.push("/login");
-          return;
-        }
-
-        if (data.user.role !== "ADMIN") {
-          console.log(
-            "Pas admin (role =",
-            data.user.role,
-            "), redirection vers accueil"
-          );
-          router.push("/");
-          return;
-        }
-
-        console.log("Admin vérifié, accès autorisé");
-        setUser(data.user);
-        setLoading(false);
-      } catch (error) {
-        console.error("Erreur checkAuth:", error);
-        router.push("/login");
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  if (loading) {
+  if (isPending) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl">Chargement...</div>
       </div>
     );
+  }
+
+  if (!data?.user || data.user.role !== "ADMIN") {
+    return null;
   }
 
   return (

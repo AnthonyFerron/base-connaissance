@@ -6,14 +6,15 @@ import { FaTrash, FaUserShield, FaUser, FaSearch } from "react-icons/fa";
 import NavBar from "@/app/components/NavBar";
 import ConfirmModal from "@/app/components/ConfirmModal";
 import AlertModal from "@/app/components/AlertModal";
+import { authClient } from "@/lib/auth-client";
 
 export default function AdminUsersPage() {
   const router = useRouter();
+  const { data, isPending } = authClient.useSession();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("ALL");
-  const [isAdmin, setIsAdmin] = useState(false);
   const [alertModal, setAlertModal] = useState({
     isOpen: false,
     message: "",
@@ -26,30 +27,20 @@ export default function AdminUsersPage() {
   });
 
   useEffect(() => {
-    checkAdminAndLoadUsers();
-  }, []);
+    if (isPending) return;
 
-  const checkAdminAndLoadUsers = async () => {
-    try {
-      const response = await fetch("/api/auth/test-session");
-      if (!response.ok) {
-        router.push("/login");
-        return;
-      }
-
-      const data = await response.json();
-      if (data.user?.role !== "ADMIN") {
-        router.push("/");
-        return;
-      }
-
-      setIsAdmin(true);
-      await loadUsers();
-    } catch (error) {
-      console.error("Erreur:", error);
+    if (!data?.user) {
       router.push("/login");
+      return;
     }
-  };
+
+    if (data.user.role !== "ADMIN") {
+      router.push("/");
+      return;
+    }
+
+    loadUsers();
+  }, [data, isPending, router]);
 
   const loadUsers = async () => {
     try {
@@ -133,12 +124,16 @@ export default function AdminUsersPage() {
     return matchesSearch && matchesRole;
   });
 
-  if (loading) {
+  if (isPending || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl">Chargement...</div>
       </div>
     );
+  }
+
+  if (!data?.user || data.user.role !== "ADMIN") {
+    return null;
   }
 
   return (

@@ -9,7 +9,7 @@ import NavBar from "@/app/components/NavBar";
 
 export default function AdminRequestsPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const { data, isPending } = authClient.useSession();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilters, setStatusFilters] = useState({
@@ -23,48 +23,20 @@ export default function AdminRequestsPage() {
   });
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Utiliser l'API pour récupérer le rôle
-        const response = await fetch("/api/auth/test-session");
+    if (isPending) return;
 
-        if (!response.ok) {
-          console.log("Pas authentifié, redirection vers login");
-          router.push("/login");
-          return;
-        }
+    if (!data?.user) {
+      router.push("/login");
+      return;
+    }
 
-        const data = await response.json();
-        console.log("Données utilisateur:", data);
-        console.log("Role:", data.user?.role);
+    if (data.user.role !== "ADMIN") {
+      router.push("/");
+      return;
+    }
 
-        if (!data.user) {
-          console.log("Pas d'utilisateur, redirection vers login");
-          router.push("/login");
-          return;
-        }
-
-        if (data.user.role !== "ADMIN") {
-          console.log(
-            "Pas admin (role =",
-            data.user.role,
-            "), redirection vers accueil"
-          );
-          router.push("/");
-          return;
-        }
-
-        console.log("Admin vérifié, chargement des requests");
-        setUser(data.user);
-        fetchRequests();
-      } catch (error) {
-        console.error("Erreur checkAuth:", error);
-        router.push("/login");
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+    fetchRequests();
+  }, [isPending, data, router]);
 
   const fetchRequests = async () => {
     try {
@@ -138,12 +110,16 @@ export default function AdminRequestsPage() {
     return "A ajouté un commentaire à la Fiche";
   };
 
-  if (loading) {
+  if (isPending || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl">Chargement...</div>
       </div>
     );
+  }
+
+  if (!data?.user || data.user.role !== "ADMIN") {
+    return null;
   }
 
   return (
