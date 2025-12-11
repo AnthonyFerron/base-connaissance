@@ -11,14 +11,14 @@ export default function LoginPage() {
   const [success, setSuccess] = useState("");
   const router = useRouter();
 
-  const { user, signin, signup } = useAuth();
+  const { user, signin, signup, loading } = useAuth();
 
-  // ✅ Si déjà connecté → redirection
+  // ✅ Si déjà connecté → redirection (mais pas pendant le chargement)
   useEffect(() => {
-    if (user) {
+    if (user && !loading) {
       router.replace("/");
     }
-  }, [user, router]);
+  }, [user, loading, router]);
 
   async function onSubmit(e) {
     e.preventDefault();
