@@ -140,8 +140,8 @@ export default function MyNavbar() {
     setFilters({
       generation: null,
       types: [],
+      search: "",
     });
-    setSearch("");
   };
 
   if (pathname === "/login") {
@@ -157,7 +157,11 @@ export default function MyNavbar() {
   };
 
   const filteredResults = allPokemons
-    .filter((p) => p.name?.toLowerCase().includes(filters.search.toLowerCase()))
+    .filter((p) => {
+      const searchTerm = (filters.search || "").toLowerCase();
+      const pokemonName = (p.name || "").toLowerCase();
+      return pokemonName.includes(searchTerm);
+    })
     .slice(0, 6);
 
   return (

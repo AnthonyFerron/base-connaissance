@@ -117,9 +117,10 @@ export default function AdminUsersPage() {
   };
 
   const filteredUsers = users.filter((user) => {
+    const search = (searchTerm || "").toLowerCase();
     const matchesSearch =
-      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      (user.name || "").toLowerCase().includes(search) ||
+      (user.email || "").toLowerCase().includes(search);
     const matchesRole = filterRole === "ALL" || user.role === filterRole;
     return matchesSearch && matchesRole;
   });

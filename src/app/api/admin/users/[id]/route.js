@@ -5,7 +5,7 @@ import { checkAdmin } from "@/lib/auth-helpers";
 // PATCH - Modifier le rôle d'un utilisateur
 export async function PATCH(request, { params }) {
   try {
-    const { isAdmin } = await checkAdmin(request);
+    const { isAdmin, user: adminUser } = await checkAdmin(request);
     if (!isAdmin) {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -33,7 +33,7 @@ export async function PATCH(request, { params }) {
     }
 
     // Empêcher un admin de se retirer ses propres droits
-    if (user.id === admin.id && role === "USER") {
+    if (user.id === adminUser.id && role === "USER") {
       return NextResponse.json(
         {
           error:

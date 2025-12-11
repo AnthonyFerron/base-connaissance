@@ -15,17 +15,36 @@ export default function CardPokemon({ pokemon }) {
 
   // Utiliser l'URL externe si l'image locale n'existe pas ou en cas d'erreur
   const getImageSrc = () => {
-    if (
-      imgError ||
-      !pokemon.photo ||
-      pokemon.photo.startsWith("/images/pokemon/")
-    ) {
-      // Si erreur ou chemin local, utiliser l'image Pokemon.com
+    // Si erreur détectée, utiliser Pokemon.com
+    if (imgError) {
       const pokedexId = pokemon.content?.idpokedex || pokemon.id;
       const paddedId = String(pokedexId).padStart(3, "0");
       return `https://www.pokemon.com/static-assets/content-assets/cms2/img/pokedex/full/${paddedId}.png`;
     }
+
+    // Si pas de photo ou image par défaut, utiliser Pokemon.com
+    if (!pokemon.photo || pokemon.photo === "/images/pokemon/default.png") {
+      const pokedexId = pokemon.content?.idpokedex || pokemon.id;
+      const paddedId = String(pokedexId).padStart(3, "0");
+      return `https://www.pokemon.com/static-assets/content-assets/cms2/img/pokedex/full/${paddedId}.png`;
+    }
+
+    // Sinon utiliser la photo du pokemon
     return pokemon.photo;
+  };
+
+  // Déterminer si on doit désactiver l'optimisation
+  const isUnoptimized = () => {
+    const src = getImageSrc();
+    // Désactiver l'optimisation pour les URLs externes
+    if (src.startsWith("http")) return true;
+    // Désactiver l'optimisation pour les images uploadées localement (peut ne pas exister en prod)
+    if (
+      src.startsWith("/images/pokemon/") &&
+      src !== "/images/pokemon/default.png"
+    )
+      return true;
+    return false;
   };
 
   return (
@@ -75,7 +94,7 @@ export default function CardPokemon({ pokemon }) {
             className="object-contain"
             priority
             onError={() => setImgError(true)}
-            unoptimized={getImageSrc().startsWith("http")}
+            unoptimized={isUnoptimized()}
           />
         </div>
 
