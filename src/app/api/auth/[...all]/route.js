@@ -88,3 +88,5 @@ export async function POST(request) {
 
   return handler.POST(request);
 }
+
+export const GET = handler.GET;
