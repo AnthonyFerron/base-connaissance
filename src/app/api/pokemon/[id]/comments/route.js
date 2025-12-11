@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth-helpers";
 
 // GET /api/pokemon/[id]/comments : récupère tous les commentaires du pokemon
 export async function GET(request, context) {
@@ -37,11 +37,9 @@ export async function POST(request, context) {
 
   try {
     // Vérifier l'authentification
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const { user } = await getSession(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json(
         { error: "Authentification requise" },
         { status: 401 }
@@ -71,7 +69,7 @@ export async function POST(request, context) {
     const newComment = await prisma.commentaire.create({
       data: {
         text: texte,
-        authorId: session.user.id,
+        authorId: user.id,
         pokemonId: Number(id),
       },
       include: {

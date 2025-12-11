@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { writeFile } from "fs/promises";
 import { join } from "path";
+import { getSession } from "@/lib/auth-helpers";
 
 export async function GET() {
   try {
@@ -87,40 +88,9 @@ export async function POST(request) {
       photoUrl = "/images/pokemon/default.png";
     }
 
-    const cookieHeader = request.headers.get("cookie");
-    let userId = null;
+    const { user } = await getSession(request);
 
-    if (cookieHeader) {
-      const cookies = cookieHeader.split(";").reduce((acc, cookie) => {
-        const [key, value] = cookie.trim().split("=");
-        acc[key] = decodeURIComponent(value);
-        return acc;
-      }, {});
-
-      const rawSessionToken =
-        cookies["better-auth.session_token"] ||
-        cookies["better_auth.session_token"] ||
-        cookies["session_token"];
-
-      if (rawSessionToken) {
-        try {
-          const sessionToken = rawSessionToken.split(".")[0];
-
-          const session = await prisma.session.findUnique({
-            where: { token: sessionToken },
-            include: { user: true },
-          });
-
-          if (session && session.user) {
-            userId = session.user.id;
-          }
-        } catch (error) {
-          console.error("Erreur récupération session:", error);
-        }
-      }
-    }
-
-    if (!userId) {
+    if (!user) {
       return NextResponse.json(
         { error: "Vous devez être connecté pour créer une demande" },
         { status: 401 }
@@ -138,7 +108,7 @@ export async function POST(request) {
         generationId: parseInt(generationId),
         actionType: "AJOUT",
         status: "EN_ATTENTE",
-        authorId: userId,
+        authorId: user.id,
         types: {
           connect: parsedTypeIds.map((id) => ({ id: parseInt(id) })),
         },

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth-helpers";
 
 // PUT /api/pokemon/[id]/comments/[commentId] : modifier un commentaire
 export async function PUT(request, context) {
@@ -40,7 +40,7 @@ export async function PUT(request, context) {
     }
 
     // Vérifier que l'utilisateur est l'auteur du commentaire
-    if (comment.authorId !== session.user.id) {
+    if (comment.authorId !== user.id) {
       return NextResponse.json(
         { error: "Vous ne pouvez modifier que vos propres commentaires" },
         { status: 403 }
@@ -75,11 +75,9 @@ export async function DELETE(request, context) {
 
   try {
     // Vérifier l'authentification
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const { user } = await getSession(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json(
         { error: "Authentification requise" },
         { status: 401 }
@@ -107,7 +105,7 @@ export async function DELETE(request, context) {
     }
 
     // Vérifier que l'utilisateur est l'auteur OU admin
-    if (comment.authorId !== session.user.id && session.user.role !== "ADMIN") {
+    if (comment.authorId !== user.id && user.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Vous ne pouvez supprimer que vos propres commentaires" },
         { status: 403 }
