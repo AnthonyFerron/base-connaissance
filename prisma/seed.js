@@ -619,19 +619,19 @@ async function main() {
   const questionsData = [
     {
       question: "Quel est le type principal de Pikachu ?",
-      image: "/images/quiz/pikachu.png",
+      image: null,
       correct: "Électrik",
       choices: ["Électrik", "Feu", "Plante", "Normal"],
     },
     {
       question: "Quel Pokémon est le starter eau de Kanto ?",
-      image: "/images/quiz/carapuce.png",
+      image: null,
       correct: "Carapuce",
       choices: ["Carapuce", "Piplup", "Moustillon", "Gobou"],
     },
     {
       question: "Quel Pokémon est connu comme le Pokémon génétique ?",
-      image: "/images/quiz/mewtwo.png",
+      image: null,
       correct: "Mewtwo",
       choices: ["Mew", "Mewtwo", "Deoxys", "Genesect"],
     },
@@ -643,13 +643,13 @@ async function main() {
     },
     {
       question: "Lequel de ces Pokémon peut évoluer avec une pierre feu ?",
-      image: "/images/quiz/evoli.png",
+      image: null,
       choices: ["Evoli", "Pikachu", "Tarsal", "Caninos"],
       correct: "Caninos",
     },
     {
       question: "Quel Pokémon est le numéro 1 du Pokédex national ?",
-      image: "/images/quiz/bulbizarre.png",
+      image: null,
       choices: ["Bulbizarre", "Pikachu", "Mew", "Arceus"],
       correct: "Bulbizarre",
     },
@@ -661,7 +661,7 @@ async function main() {
     },
     {
       question: "Quel Pokémon est la mascotte officielle de Pokémon ?",
-      image: "/images/quiz/pikachu2.png",
+      image: null,
       choices: ["Pikachu", "Sacha", "Ronflex", "Dracaufeu"],
       correct: "Pikachu",
     },
@@ -674,7 +674,7 @@ async function main() {
     {
       question:
         "Combien de formes différentes peut prendre Evoli via évolution ?",
-      image: "/images/quiz/evolutions_evoli.png",
+      image: null,
       choices: ["5", "7", "8", "9"],
       correct: "8",
     },

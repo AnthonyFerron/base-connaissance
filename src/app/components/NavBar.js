@@ -19,6 +19,7 @@ export default function MyNavbar() {
   const router = useRouter();
   const { filters, setFilters } = useFilters();
   const [openProfile, setOpenProfile] = useState(false);
+  const [isEditingPseudo, setIsEditingPseudo] = useState(false);
 
   const openSidebar = () => setShowSidebar(true);
   const closeSidebar = () => setShowSidebar(false);
@@ -40,17 +41,19 @@ export default function MyNavbar() {
       await authClient.signOut({
         fetchOptions: {
           onSuccess: () => {
-            router.push("/login");
+            // Force le rechargement complet pour nettoyer la session
+            window.location.href = "/login";
           },
           onError: (ctx) => {
             console.error("Logout failed:", ctx.error);
+            window.location.href = "/login";
           },
         },
       });
     } catch (error) {
       console.error("Logout error:", error);
       // Rediriger quand même vers la page de login
-      router.push("/login");
+      window.location.href = "/login";
     }
   };
 
@@ -64,7 +67,7 @@ export default function MyNavbar() {
     try {
       if (!pseudo || pseudo === user?.name) return;
       await updateUser({ name: pseudo });
-      setOpenProfile(false);
+      setIsEditingPseudo(false);
     } catch (error) {
       console.error("Erreur update pseudo:", error);
     }
@@ -259,14 +262,6 @@ export default function MyNavbar() {
               )}
           </div>
         )}
-        {pathname !== "/" && (
-          <button
-            onClick={() => router.push("/quiz")}
-            className="bg-[#EC533A] hover:bg-orange-700 text-white rounded-md px-4 py-2 border border-black"
-          >
-            Quiz
-          </button>
-        )}
         <div className="flex flex-row gap-10 items-center">
           <Image
             src="/images/logo.png"
@@ -293,48 +288,80 @@ export default function MyNavbar() {
                   className="absolute right-0 mt-2 w-64 bg-white shadow-md border border-black rounded-md p-3 z-50"
                   onClick={(e) => e.stopPropagation()}
                 >
+                  {/* Pseudo Section */}
                   <div className="mb-2">
-                    <span className="text-sm text-gray-500">Pseudo</span>
-                    <input
-                      type="text"
-                      value={pseudo}
-                      onChange={(e) => setPseudo(e.target.value)}
-                      className="w-full border rounded-md px-2 py-1 mt-1 text-sm"
-                    />
-                    <button
-                      onClick={savePseudo}
-                      className="mt-2 w-full bg-[#EC533A] text-white rounded-md py-1 hover:bg-gray-500"
-                    >
-                      Sauvegarder
-                    </button>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-gray-500">Pseudo</span>
+                      {!isEditingPseudo && (
+                        <button
+                          onClick={() => setIsEditingPseudo(true)}
+                          className="text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                          <Pen className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    {!isEditingPseudo ? (
+                      <p className="text-sm font-semibold">
+                        {user?.name || "Utilisateur"}
+                      </p>
+                    ) : (
+                      <>
+                        <input
+                          type="text"
+                          value={pseudo}
+                          onChange={(e) => setPseudo(e.target.value)}
+                          className="w-full border rounded-md px-2 py-1 mt-1 text-sm"
+                          autoFocus
+                        />
+                        <button
+                          onClick={savePseudo}
+                          className="mt-2 w-full bg-[#EC533A] text-white rounded-md py-1 hover:bg-[#d43f2a]"
+                        >
+                          Sauvegarder
+                        </button>
+                      </>
+                    )}
                   </div>
 
                   <hr className="my-2" />
 
-                  <span className="text-sm text-gray-500">Email</span>
-                  <p className="text-sm font-semibold">{user?.email}</p>
+                  {/* Email Section */}
+                  <div className="mb-2">
+                    <span className="text-sm text-gray-500">Email</span>
+                    <p className="text-sm font-semibold">{user?.email}</p>
+                  </div>
 
                   <hr className="my-2" />
 
+                  {/* Administration Link */}
                   {user.role === "ADMIN" && (
-                    <button
-                      onClick={() => router.push("/admin")}
-                      className="w-full text-left py-1 hover:bg-gray-100 "
-                    >
-                      Administration
-                    </button>
+                    <>
+                      <button
+                        onClick={() => {
+                          router.push("/admin");
+                          setOpenProfile(false);
+                        }}
+                        className="w-full text-left text-sm font-medium py-1 hover:bg-gray-100 rounded"
+                      >
+                        Administration
+                      </button>
+                      <hr className="my-2" />
+                    </>
                   )}
 
+                  {/* Action Buttons */}
                   <button
                     onClick={handleLogout}
-                    className="w-full mt-2 bg-[#EC533A] text-white rounded-md py-1 hover:bg-gray-500"
+                    className="w-full mt-2 bg-[#EC533A] text-white rounded-md py-2 hover:bg-[#d43f2a] font-medium"
                   >
                     Déconnexion
                   </button>
 
                   <button
                     onClick={handleDeleteAccount}
-                    className="w-full mt-2 p-1 text-red-600 text-left rounded-lg hover:bg-gray-300"
+                    className="w-full mt-2 bg-[#EC533A] text-white rounded-md py-2 hover:bg-[#d43f2a] font-medium"
                   >
                     Supprimer ce compte
                   </button>

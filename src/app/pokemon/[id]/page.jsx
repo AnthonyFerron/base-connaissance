@@ -3,6 +3,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/providers/AuthProvider";
+import ConfirmModal from "@/app/components/ConfirmModal";
+import AlertModal from "@/app/components/AlertModal";
 
 export default function PokemonPage() {
   const { id } = useParams();
@@ -15,6 +17,15 @@ export default function PokemonPage() {
   const [newComment, setNewComment] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editingCommentText, setEditingCommentText] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    message: "",
+    type: "error",
+  });
 
   useEffect(() => {
     async function fetchPokemon() {
@@ -68,9 +79,100 @@ export default function PokemonPage() {
       setShowCommentForm(false);
     } catch (error) {
       console.error("Erreur:", error);
-      alert("Erreur lors de l'ajout du commentaire");
+      setAlertModal({
+        isOpen: true,
+        message: "Erreur lors de l'ajout du commentaire",
+        type: "error",
+      });
     } finally {
       setCommentLoading(false);
+    }
+  };
+
+  const handleEditComment = (comment) => {
+    setEditingCommentId(comment.id);
+    setEditingCommentText(comment.text);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditingCommentText("");
+  };
+
+  const handleUpdateComment = async (commentId) => {
+    if (!editingCommentText.trim()) return;
+
+    try {
+      const response = await fetch(`/api/pokemon/${id}/comments/${commentId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          texte: editingCommentText,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de la modification du commentaire");
+      }
+
+      const updatedComment = await response.json();
+
+      // Mettre à jour le commentaire dans la liste
+      setPokemon((prev) => ({
+        ...prev,
+        comments: prev.comments.map((c) =>
+          c.id === commentId ? updatedComment : c
+        ),
+      }));
+
+      setEditingCommentId(null);
+      setEditingCommentText("");
+    } catch (error) {
+      console.error("Erreur:", error);
+      setAlertModal({
+        isOpen: true,
+        message: "Erreur lors de la modification du commentaire",
+        type: "error",
+      });
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    setCommentToDelete(commentId);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDeleteComment = async () => {
+    if (!commentToDelete) return;
+
+    try {
+      const response = await fetch(
+        `/api/pokemon/${id}/comments/${commentToDelete}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de la suppression du commentaire");
+      }
+
+      // Retirer le commentaire de la liste
+      setPokemon((prev) => ({
+        ...prev,
+        comments: prev.comments.filter((c) => c.id !== commentToDelete),
+      }));
+
+      setCommentToDelete(null);
+    } catch (error) {
+      console.error("Erreur:", error);
+      setAlertModal({
+        isOpen: true,
+        message: "Erreur lors de la suppression du commentaire",
+        type: "error",
+      });
     }
   };
 
@@ -360,8 +462,58 @@ export default function PokemonPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Boutons d'action */}
+                  {user &&
+                    (user.id === c.authorId || user.role === "ADMIN") && (
+                      <div className="flex gap-2">
+                        {user.id === c.authorId &&
+                          editingCommentId !== c.id && (
+                            <button
+                              onClick={() => handleEditComment(c)}
+                              className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+                            >
+                              Modifier
+                            </button>
+                          )}
+                        <button
+                          onClick={() => handleDeleteComment(c.id)}
+                          className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    )}
                 </div>
-                <div className="text-gray-700 leading-relaxed">{c.text}</div>
+
+                {/* Mode édition */}
+                {editingCommentId === c.id ? (
+                  <div className="space-y-3">
+                    <textarea
+                      value={editingCommentText}
+                      onChange={(e) => setEditingCommentText(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      rows="3"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={handleCancelEdit}
+                        className="px-4 py-2 text-gray-600 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-semibold transition"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        onClick={() => handleUpdateComment(c.id)}
+                        disabled={!editingCommentText.trim()}
+                        className="px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white rounded-lg text-sm font-semibold transition"
+                      >
+                        Enregistrer
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-gray-700 leading-relaxed">{c.text}</div>
+                )}
               </div>
             ))}
           </div>
@@ -375,6 +527,32 @@ export default function PokemonPage() {
           </div>
         )}
       </div>
+
+      {/* Modal de confirmation de suppression */}
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setCommentToDelete(null);
+        }}
+        onConfirm={confirmDeleteComment}
+        title="Supprimer le commentaire"
+        message="Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible."
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        confirmColor="red"
+      />
+
+      {/* Modal d'alerte */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() =>
+          setAlertModal({ isOpen: false, message: "", type: "error" })
+        }
+        title="Erreur"
+        message={alertModal.message}
+        type={alertModal.type}
+      />
     </div>
   );
 }
