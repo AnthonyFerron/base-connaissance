@@ -95,23 +95,29 @@ export function AuthProvider({ children }) {
 
   // ✅ Suppression de compte
   const deleteAccount = async () => {
+    console.log("🔵 CLIENT: deleteAccount appelée");
     try {
       const response = await fetch("/api/auth/delete-account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
 
+      console.log("🔵 CLIENT: Réponse reçue, status =", response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.log("🔵 CLIENT: Erreur =", errorData);
         throw new Error(
           errorData.error || "Erreur lors de la suppression du compte"
         );
       }
 
-      setUser(null);
+      console.log("🔵 CLIENT: Suppression réussie, appel de logout");
+      // Déconnecter après la suppression
+      await logout();
       return await response.json();
     } catch (error) {
-      console.error("Error deleting account:", error);
+      console.error("🔵 CLIENT: Error deleting account:", error);
       throw error;
     }
   };
