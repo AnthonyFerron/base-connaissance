@@ -1,11 +1,11 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 enum Role {
@@ -25,10 +25,10 @@ enum RequestStatus {
 }
 
 model User {
-  id       String @id @default(cuid())
-  pseudo   String? @unique
-  email    String @unique
-  role     Role   @default(USER)
+  id            String   @id @default(cuid())
+  name          String?  @unique
+  email         String   @unique
+  role          Role     @default(USER)
   emailVerified Boolean?
 
   comments Commentaire[]
@@ -43,10 +43,12 @@ model User {
 }
 
 model Generation {
-  id  Int    @id @default(autoincrement())
-  nom String @unique
+  id               Int    @id @default(autoincrement())
+  name             String @unique
+  generationNumber Int    @unique
 
   pokemons Pokemon[]
+  requests Request[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -58,8 +60,8 @@ model Type {
   image String?
   color String?
 
-  pokemons Pokemon[]
-  requests Request[]
+  pokemons Pokemon[] @relation("PokemonToType")
+  requests Request[] @relation("RequestToType")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -74,7 +76,7 @@ model Pokemon {
   generation   Generation @relation(fields: [generationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   generationId Int
 
-  types    Type[]
+  types    Type[]        @relation("PokemonToType")
   comments Commentaire[]
   requests Request[]
 
@@ -86,10 +88,10 @@ model Pokemon {
 
 model Commentaire {
   id        Int      @id @default(autoincrement())
-  texte     String
+  text      String
   createdAt DateTime @default(now())
 
-  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   authorId String
 
   pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -103,19 +105,23 @@ model Request {
   id           Int           @id @default(autoincrement())
   name         String
   photo        String
-  types        Type[]
+  types        Type[]        @relation("RequestToType")
   content      Json
   actionType   ActionType
   status       RequestStatus @default(EN_ATTENTE)
   proposedDate DateTime      @default(now())
 
-  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   authorId String
 
-  pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  pokemonId Int
+  generation   Generation @relation(fields: [generationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  generationId Int
+
+  pokemon   Pokemon? @relation(fields: [pokemonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  pokemonId Int?
 
   @@index([authorId])
+  @@index([generationId])
   @@index([pokemonId])
   @@index([status])
 }
@@ -147,9 +153,27 @@ model Account {
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
   scope                 String?
-  password               String?
+  password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
   @@map("account")
+}
+
+model QuizQuestion {
+  id         Int     @id @default(autoincrement())
+  question   String
+  image      String?
+  difficulty String?
+
+  answers QuizAnswer[]
+}
+
+model QuizAnswer {
+  id        Int     @id @default(autoincrement())
+  text      String
+  isCorrect Boolean @default(false)
+
+  questionId Int
+  question   QuizQuestion @relation(fields: [questionId], references: [id])
 }
