@@ -7,7 +7,7 @@ import { Button } from "flowbite-react";
 import Image from "next/image";
 
 export default function ProfilePage() {
-  const { user, updateUser, logout } = useAuth();
+  const { user, updateUser, deleteAccount, logout } = useAuth();
   const router = useRouter();
   const [pseudo, setPseudo] = useState(user?.name || "");
   const [loading, setLoading] = useState(false);
@@ -41,16 +41,24 @@ export default function ProfilePage() {
 
   // ✅ Suppression logique du compte
   const handleDeleteAccount = async () => {
+    if (
+      !confirm(
+        "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action marquera votre compte comme supprimé."
+      )
+    ) {
+      return;
+    }
+
     try {
-      await updateUser({
-        name: "deletedUser",
-        email: "deleted@pokeme.com",
-        role: "deleted",
-      });
-      await logout();
+      setLoading(true);
+      setError("");
+      await deleteAccount();
       router.push("/login");
     } catch (err) {
+      setError("Erreur lors de la suppression du compte");
       console.error("Erreur suppression compte:", err);
+    } finally {
+      setLoading(false);
     }
   };
 

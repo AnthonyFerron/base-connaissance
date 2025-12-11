@@ -24,16 +24,16 @@ export default function RootLayout({ children }) {
           <FiltersProvider>
             <SidebarContext.Provider value={{ showSidebar, setShowSidebar }}>
               {!isLoginPage && <MyNavbar />}
-              <div
+              <main
                 className={`transition-all duration-300 ${
                   !isLoginPage && showSidebar ? "pl-64" : "pl-0"
-                } ${!isLoginPage ? "pt-[84px]" : ""} flex-1`}
+                } ${!isLoginPage ? "pt-[84px]" : ""} flex-1 flex flex-col`}
               >
                 {children}
-              </div>
+              </main>
+              {!isLoginPage && <Footer />}
             </SidebarContext.Provider>
           </FiltersProvider>
-          {!isLoginPage && <Footer />}
         </AuthProvider>
       </body>
     </html>

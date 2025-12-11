@@ -31,17 +31,17 @@ export function AuthProvider({ children }) {
   };
 
   // ✅ Déconnexion
- const logout = async () => {
-  try {
-    await fetch("/api/auth/logout", { method: "POST" });
-    await checkAuth();  
-  } catch (error) {
-    console.error("Logout failed:", error);
-  }
-};
+  const logout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      await checkAuth();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   // ✅ Inscription
-  const signup = async ({email, password }) => {
+  const signup = async ({ email, password }) => {
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -49,7 +49,8 @@ export function AuthProvider({ children }) {
     });
 
     if (!res.ok) {
-      throw new Error("Erreur lors de l’inscription");
+      const errorData = await res.json();
+      throw new Error(errorData.error || "Erreur lors de l'inscription");
     }
 
     return await res.json();
@@ -64,7 +65,8 @@ export function AuthProvider({ children }) {
     });
 
     if (!res.ok) {
-      throw new Error("Erreur lors de la connexion");
+      const errorData = await res.json();
+      throw new Error(errorData.error || "Erreur lors de la connexion");
     }
 
     await checkAuth(); // recharge l’utilisateur
@@ -73,26 +75,60 @@ export function AuthProvider({ children }) {
 
   // ✅ Update utilisateur (pseudo, suppression logique, etc.)
   const updateUser = async (data) => {
-  try {
-    const response = await fetch("/api/auth/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+    try {
+      const response = await fetch("/api/auth/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-    if (!response.ok) throw new Error("Failed to update user");
+      if (!response.ok) throw new Error("Failed to update user");
 
-    await checkAuth(); 
+      await checkAuth();
 
-    return await response.json();
-  } catch (error) {
-    console.error("Error updating user:", error);
-    throw error;
-  }
-};
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
+  };
+
+  // ✅ Suppression de compte
+  const deleteAccount = async () => {
+    try {
+      const response = await fetch("/api/auth/delete-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Erreur lors de la suppression du compte"
+        );
+      }
+
+      setUser(null);
+      return await response.json();
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      throw error;
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, signup, signin, updateUser, checkAuth }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        logout,
+        signup,
+        signin,
+        updateUser,
+        deleteAccount,
+        checkAuth,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
