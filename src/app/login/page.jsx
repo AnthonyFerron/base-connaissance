@@ -43,10 +43,14 @@ export default function LoginPage() {
         );
         setMode("login");
       } else {
+        console.log("🟢 LOGIN: Tentative de connexion...");
         await signin({ email, password });
+        console.log("🟢 LOGIN: Connexion réussie");
         router.push("/");
       }
     } catch (err) {
+      console.log("🟢 LOGIN: Erreur capturée =", err);
+      console.log("🟢 LOGIN: err.message =", err?.message);
       setError(err?.message || "Erreur inconnue");
     } finally {
       setIsLoading(false);

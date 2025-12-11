@@ -28,7 +28,7 @@ export async function POST(req) {
       data: {
         name: "deletedUser",
         email: `deleted-${userId}@pokeme.com`, // Email unique pour éviter les conflits
-        role: "deleted",
+        role: "DELETED", // Utiliser la valeur de l'enum
       },
     });
 

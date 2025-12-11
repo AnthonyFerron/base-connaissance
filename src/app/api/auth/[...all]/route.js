@@ -61,6 +61,7 @@ function translateAuthError(errorMessage) {
 
 // --- ROUTE /signup ---
 async function handleSignup(request) {
+  console.log("🔴 SIGNUP: Route appelée");
   try {
     const body = await request.json();
     const { email, password, name } = body;
@@ -72,13 +73,23 @@ async function handleSignup(request) {
       );
     }
 
-    const { user, error } = await auth.api.signUpEmail({
-      body: {
-        email,
-        password,
-        name: name || email.split("@")[0],
-      },
-    });
+    let result;
+    try {
+      result = await auth.api.signUpEmail({
+        body: {
+          email,
+          password,
+          name: name || email.split("@")[0],
+        },
+      });
+    } catch (authError) {
+      // Better Auth a lancé une exception
+      console.log("🔴 SIGNUP: Exception de Better Auth =", authError);
+      const translatedError = translateAuthError(authError.message);
+      return NextResponse.json({ error: translatedError }, { status: 400 });
+    }
+
+    const { user, error } = result;
 
     if (error) {
       const translatedError = translateAuthError(error.message);
@@ -87,40 +98,73 @@ async function handleSignup(request) {
 
     return NextResponse.json({ user }, { status: 201 });
   } catch (err) {
-    console.error("Erreur signup:", err);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    console.error("🔴 SIGNUP: Exception inattendue:", err);
+    return NextResponse.json(
+      { error: "Une erreur est survenue. Veuillez réessayer." },
+      { status: 500 }
+    );
   }
 }
 
 // --- ROUTE /signin ---
 async function handleSignin(request) {
+  console.log("🔴 SIGNIN: Route appelée");
   try {
     const body = await request.json();
     const { email, password } = body;
+    console.log("🔴 SIGNIN: Email =", email);
 
     if (!email || !password) {
+      console.log("🔴 SIGNIN: Email ou mot de passe manquant");
       return NextResponse.json(
         { error: "Email et mot de passe requis" },
         { status: 400 }
       );
     }
 
-    const { user, error } = await auth.api.signInEmail({
-      body: {
-        email,
-        password,
-      },
-    });
+    console.log("🔴 SIGNIN: Appel de auth.api.signInEmail...");
 
-    if (error) {
-      const translatedError = translateAuthError(error.message);
+    let result;
+    try {
+      result = await auth.api.signInEmail({
+        body: {
+          email,
+          password,
+        },
+      });
+    } catch (authError) {
+      // Better Auth a lancé une exception
+      console.log("🔴 SIGNIN: Exception de Better Auth =", authError);
+      const translatedError = translateAuthError(authError.message);
       return NextResponse.json({ error: translatedError }, { status: 400 });
     }
 
+    const { user, error } = result;
+    console.log("🔴 SIGNIN: user =", user ? "OK" : "null");
+    console.log("🔴 SIGNIN: error =", error);
+
+    if (error) {
+      const translatedError = translateAuthError(error.message);
+      console.log("🔴 SIGNIN: Erreur traduite =", translatedError);
+      return NextResponse.json({ error: translatedError }, { status: 400 });
+    }
+
+    if (!user) {
+      console.log("🔴 SIGNIN: Pas d'utilisateur retourné");
+      return NextResponse.json(
+        { error: "Email ou mot de passe incorrect" },
+        { status: 400 }
+      );
+    }
+
+    console.log("🔴 SIGNIN: Connexion réussie");
     return NextResponse.json({ user }, { status: 200 });
   } catch (err) {
-    console.error("Erreur signin:", err);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    console.error("🔴 SIGNIN: Exception inattendue:", err);
+    return NextResponse.json(
+      { error: "Une erreur est survenue. Veuillez réessayer." },
+      { status: 500 }
+    );
   }
 }
 

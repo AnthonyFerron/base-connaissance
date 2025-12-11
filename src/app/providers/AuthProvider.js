@@ -58,14 +58,18 @@ export function AuthProvider({ children }) {
 
   // ✅ Connexion
   const signin = async ({ email, password }) => {
+    console.log("🔵 SIGNIN: Début de la connexion");
     const res = await fetch("/api/auth/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
 
+    console.log("🔵 SIGNIN: Status de la réponse =", res.status);
+
     if (!res.ok) {
       const errorData = await res.json();
+      console.log("🔵 SIGNIN: Données d'erreur =", errorData);
       throw new Error(errorData.error || "Erreur lors de la connexion");
     }
 
