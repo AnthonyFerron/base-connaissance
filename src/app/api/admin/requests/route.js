@@ -1,44 +1,12 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { checkAdmin } from "@/lib/auth-helpers";
 
 export async function GET(request) {
   try {
-    const cookieHeader = request.headers.get("cookie");
-    let userId = null;
-    let userRole = null;
+    const { isAdmin, user } = await checkAdmin(request);
 
-    if (cookieHeader) {
-      const cookies = cookieHeader.split(";").reduce((acc, cookie) => {
-        const [key, value] = cookie.trim().split("=");
-        acc[key] = decodeURIComponent(value);
-        return acc;
-      }, {});
-
-      const rawSessionToken =
-        cookies["better-auth.session_token"] ||
-        cookies["better_auth.session_token"] ||
-        cookies["session_token"];
-
-      if (rawSessionToken) {
-        try {
-          const sessionToken = rawSessionToken.split(".")[0];
-
-          const session = await prisma.session.findUnique({
-            where: { token: sessionToken },
-            include: { user: true },
-          });
-
-          if (session && session.user) {
-            userId = session.user.id;
-            userRole = session.user.role;
-          }
-        } catch (error) {
-          console.error("Erreur récupération session:", error);
-        }
-      }
-    }
-
-    if (!userId || userRole !== "ADMIN") {
+    if (!isAdmin) {
       return NextResponse.json(
         { error: "Accès non autorisé" },
         { status: 403 }

@@ -1,43 +1,13 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { checkAdmin } from "@/lib/auth-helpers";
 
 // PUT - Modifier une question
 export async function PUT(request, { params }) {
   try {
-    // Vérification session admin
-    const cookieHeader = request.headers.get("cookie");
-    let userRole = null;
+    const { isAdmin } = await checkAdmin(request);
 
-    if (cookieHeader) {
-      const cookies = cookieHeader.split(";").reduce((acc, cookie) => {
-        const [key, value] = cookie.trim().split("=");
-        acc[key] = decodeURIComponent(value);
-        return acc;
-      }, {});
-
-      const rawSessionToken =
-        cookies["better-auth.session_token"] ||
-        cookies["better_auth.session_token"] ||
-        cookies["session_token"];
-
-      if (rawSessionToken) {
-        try {
-          const sessionToken = rawSessionToken.split(".")[0];
-          const session = await prisma.session.findUnique({
-            where: { token: sessionToken },
-            include: { user: true },
-          });
-
-          if (session && session.user) {
-            userRole = session.user.role;
-          }
-        } catch (error) {
-          console.error("Erreur récupération session:", error);
-        }
-      }
-    }
-
-    if (userRole !== "ADMIN") {
+    if (!isAdmin) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
@@ -91,40 +61,9 @@ export async function PUT(request, { params }) {
 // DELETE - Supprimer une question
 export async function DELETE(request, { params }) {
   try {
-    // Vérification session admin
-    const cookieHeader = request.headers.get("cookie");
-    let userRole = null;
+    const { isAdmin } = await checkAdmin(request);
 
-    if (cookieHeader) {
-      const cookies = cookieHeader.split(";").reduce((acc, cookie) => {
-        const [key, value] = cookie.trim().split("=");
-        acc[key] = decodeURIComponent(value);
-        return acc;
-      }, {});
-
-      const rawSessionToken =
-        cookies["better-auth.session_token"] ||
-        cookies["better_auth.session_token"] ||
-        cookies["session_token"];
-
-      if (rawSessionToken) {
-        try {
-          const sessionToken = rawSessionToken.split(".")[0];
-          const session = await prisma.session.findUnique({
-            where: { token: sessionToken },
-            include: { user: true },
-          });
-
-          if (session && session.user) {
-            userRole = session.user.role;
-          }
-        } catch (error) {
-          console.error("Erreur récupération session:", error);
-        }
-      }
-    }
-
-    if (userRole !== "ADMIN") {
+    if (!isAdmin) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 

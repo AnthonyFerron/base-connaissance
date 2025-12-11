@@ -1,51 +1,12 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-
-// Vérifier si l'utilisateur est admin
-async function checkAdmin(request) {
-  const cookieHeader = request.headers.get("cookie");
-  if (!cookieHeader) {
-    return null;
-  }
-
-  const cookies = cookieHeader.split(";").reduce((acc, cookie) => {
-    const [key, value] = cookie.trim().split("=");
-    acc[key] = decodeURIComponent(value);
-    return acc;
-  }, {});
-
-  const rawSessionToken =
-    cookies["better-auth.session_token"] ||
-    cookies["better_auth.session_token"] ||
-    cookies["session_token"];
-
-  if (!rawSessionToken) {
-    return null;
-  }
-
-  try {
-    const sessionToken = rawSessionToken.split(".")[0];
-
-    const session = await prisma.session.findUnique({
-      where: { token: sessionToken },
-      include: { user: true },
-    });
-
-    if (session && session.user && session.user.role === "ADMIN") {
-      return session.user;
-    }
-  } catch (error) {
-    console.error("Erreur récupération session:", error);
-  }
-
-  return null;
-}
+import { checkAdmin } from "@/lib/auth-helpers";
 
 // PATCH - Modifier le rôle d'un utilisateur
 export async function PATCH(request, { params }) {
   try {
-    const admin = await checkAdmin(request);
-    if (!admin) {
+    const { isAdmin } = await checkAdmin(request);
+    if (!isAdmin) {
       return NextResponse.json(
         { error: "Accès non autorisé" },
         { status: 403 }
@@ -110,8 +71,8 @@ export async function PATCH(request, { params }) {
 // DELETE - Supprimer un utilisateur
 export async function DELETE(request, { params }) {
   try {
-    const admin = await checkAdmin(request);
-    if (!admin) {
+    const { isAdmin, user: adminUser } = await checkAdmin(request);
+    if (!isAdmin) {
       return NextResponse.json(
         { error: "Accès non autorisé" },
         { status: 403 }
@@ -133,7 +94,7 @@ export async function DELETE(request, { params }) {
     }
 
     // Empêcher un admin de se supprimer lui-même
-    if (user.id === admin.id) {
+    if (user.id === adminUser.id) {
       return NextResponse.json(
         { error: "Vous ne pouvez pas supprimer votre propre compte" },
         { status: 400 }
